@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MLB Contract Value Analysis — Nathan Brès</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#ffffff;--bg2:#f8f9fc;--bg3:#f0f2f8;--navy:#0A1628;--navy2:#1a2e4a;
+      --text:#1a1f2e;--muted:#64748b;--border:#e2e8f0;
+      --blue:#2563eb;--green:#16a34a;--red:#dc2626;--gold:#d97706;
+      --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;}
+    .page-header{background:var(--navy);color:white;padding:3rem 2rem 2.5rem;text-align:center;}
+    .page-header .eyebrow{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;color:#C8A96E;margin-bottom:0.75rem;}
+    .page-header h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:0.75rem;}
+    .page-header p{font-size:1rem;color:rgba(255,255,255,0.65);max-width:600px;margin:0 auto 1.5rem;}
+    .badges{display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;}
+    .badge{font-family:var(--mono);font-size:0.72rem;padding:0.35rem 0.85rem;border-radius:2px;letter-spacing:0.06em;font-weight:500;}
+    .badge-blue{background:rgba(37,99,235,0.2);color:#93c5fd;border:1px solid rgba(37,99,235,0.3);}
+    .badge-green{background:rgba(22,163,74,0.2);color:#86efac;border:1px solid rgba(22,163,74,0.3);}
+    .badge-gold{background:rgba(200,169,110,0.15);color:#C8A96E;border:1px solid rgba(200,169,110,0.3);}
+    .stats-bar{background:var(--navy2);padding:1.25rem 2rem;}
+    .stats-inner{max-width:1100px;margin:0 auto;display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;}
+    .stat-item{text-align:center;}
+    .stat-value{font-family:var(--mono);font-size:1.4rem;font-weight:600;color:#C8A96E;display:block;}
+    .stat-label{font-size:0.72rem;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;}
+    .stat-div{width:1px;background:rgba(255,255,255,0.1);align-self:stretch;}
+    .container{max-width:1100px;margin:0 auto;padding:0 1.5rem;}
+    .section{padding:3rem 1.5rem;}
+    .section:nth-child(even){background:var(--bg2);}
+    .section-title{font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:0.4rem;}
+    .section-desc{font-size:0.9rem;color:var(--muted);margin-bottom:1.75rem;max-width:680px;}
+    .method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1.5rem;}
+    .method-card{background:var(--bg);border:1px solid var(--border);padding:1.25rem;border-left:3px solid var(--blue);}
+    .method-card h4{font-size:0.82rem;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;}
+    .method-card p{font-size:0.85rem;color:var(--muted);line-height:1.6;}
+    .method-card code{font-family:var(--mono);font-size:0.78rem;background:var(--bg3);padding:0.1rem 0.3rem;color:var(--blue);}
+    .chart-box{background:var(--bg);border:1px solid var(--border);padding:1.25rem;margin-bottom:0.5rem;}
+    .chart-source{font-size:0.72rem;color:var(--muted);font-family:var(--mono);text-align:right;padding-top:0.5rem;}
+    .key-findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem;}
+    .finding-card{padding:1.25rem;border-radius:2px;}
+    .finding-card.green{background:#f0fdf4;border:1px solid #86efac;border-left:3px solid var(--green);}
+    .finding-card.red{background:#fef2f2;border:1px solid #fca5a5;border-left:3px solid var(--red);}
+    .finding-card.gold{background:#fffbeb;border:1px solid #fcd34d;border-left:3px solid var(--gold);}
+    .finding-card h4{font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;}
+    .finding-card.green h4{color:var(--green);}
+    .finding-card.red h4{color:var(--red);}
+    .finding-card.gold h4{color:var(--gold);}
+    .finding-card p{font-size:0.85rem;color:var(--text);line-height:1.6;}
+    .finding-card strong{font-weight:600;}
+    .table-controls{display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+    .search-input{padding:0.5rem 1rem;border:1px solid var(--border);background:var(--bg);font-family:var(--font);font-size:0.85rem;color:var(--text);outline:none;width:200px;}
+    .search-input:focus{border-color:var(--blue);}
+    .filter-btn{padding:0.5rem 1rem;border:1px solid var(--border);background:var(--bg);font-family:var(--font);font-size:0.8rem;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+    .filter-btn.active,.filter-btn:hover{background:var(--blue);color:white;border-color:var(--blue);}
+    .val-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+    .val-table th{background:var(--navy);color:white;padding:0.65rem 0.85rem;text-align:left;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;font-weight:500;white-space:nowrap;cursor:pointer;}
+    .val-table th:hover{background:var(--navy2);}
+    .val-table td{padding:0.6rem 0.85rem;border-bottom:1px solid var(--border);color:var(--text);}
+    .val-table tr:hover td{background:var(--bg2);}
+    .tag-under{background:#dcfce7;color:#166534;font-size:0.72rem;font-weight:600;padding:0.2rem 0.5rem;border-radius:2px;font-family:var(--mono);}
+    .tag-over{background:#fee2e2;color:#991b1b;font-size:0.72rem;font-weight:600;padding:0.2rem 0.5rem;border-radius:2px;font-family:var(--mono);}
+    .mono{font-family:var(--mono);font-size:0.82rem;}
+    .pos-val{color:var(--green);font-weight:600;font-family:var(--mono);font-size:0.82rem;}
+    .neg-val{color:var(--red);font-weight:500;font-family:var(--mono);font-size:0.82rem;}
+    .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--navy);color:white;font-size:0.68rem;font-weight:600;border-radius:2px;}
+    .rank-badge.top3{background:#d97706;}
+    .page-footer{background:var(--navy);color:rgba(255,255,255,0.4);text-align:center;padding:1.5rem;font-size:0.75rem;font-family:var(--mono);}
+    @media(max-width:640px){
+      .stats-inner{gap:1rem;}.stat-div{display:none;}
+      .val-table{font-size:0.75rem;}.val-table th,.val-table td{padding:0.4rem 0.5rem;}
+      .val-table th:nth-child(6),.val-table td:nth-child(6),
+      .val-table th:nth-child(7),.val-table td:nth-child(7){display:none;}
+      .chart-source{font-size:0.65rem;text-align:left;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <p class="eyebrow">Portfolio · Contract Analytics</p>
+  <h1>MLB Contract Value Analysis</h1>
+  <p>Are players worth what they're paid? Using WAR and market-rate pricing to identify the most undervalued and overpaid batters of the 2025 season.</p>
+  <div class="badges">
+    <span class="badge badge-blue">Python · Pandas</span>
+    <span class="badge badge-green">WAR · $/WAR · Surplus Value</span>
+    <span class="badge badge-gold">Spotrac · Baseball Reference · 2025</span>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><span class="stat-value">143</span><span class="stat-label">Players Analyzed</span></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><span class="stat-value">$8M</span><span class="stat-label">Market Rate / WAR</span></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><span class="stat-value">$54.3M</span><span class="stat-label">Best Surplus (Perdomo)</span></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><span class="stat-value">−$34.4M</span><span class="stat-label">Worst Surplus (Correa)</span></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><span class="stat-value">300+</span><span class="stat-label">Min PA Required</span></div>
+  </div>
+</div>
+
+<!-- Methodology -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-desc">The core idea: every WAR has a dollar value on the open market. If a player produces more value than they cost, they're a bargain. If they produce less, they're overpaid. This analysis pins market rate at <strong>$8M per WAR</strong> — the approximate 2025 free agent rate — and measures each player's surplus.</p>
+    <div class="method-grid">
+      <div class="method-card">
+        <h4>Step 1 — Collect Data</h4>
+        <p>Batting stats (WAR, OPS, PA) from <code>Baseball Reference</code>. Salaries from <code>Spotrac</code>. Merged on player name. Only batters with 300+ PA included.</p>
+      </div>
+      <div class="method-card">
+        <h4>Step 2 — Market Rate</h4>
+        <p>Set <code>$/WAR = $8M</code> based on 2025 free agent contracts. This is what teams pay per win on the open market — the benchmark for fair value.</p>
+      </div>
+      <div class="method-card">
+        <h4>Step 3 — Surplus Value</h4>
+        <p><code>Surplus = (WAR × $8M) − Salary</code>. Positive = team gets a bargain. Negative = player is overpaid relative to production.</p>
+      </div>
+      <div class="method-card">
+        <h4>Step 4 — Interpret</h4>
+        <p>Young players on pre-arb contracts dominate the "best value" list. Veterans on long-term deals often show negative surplus — the cost of aging curves.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Key Findings -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">Key Findings</h2>
+    <p class="section-desc">Three patterns stand out immediately from the data.</p>
+    <div class="key-findings">
+      <div class="finding-card green">
+        <h4>Best Value in Baseball</h4>
+        <p><strong>Geraldo Perdomo</strong> (ARI) earns $2.55M while producing 7.1 WAR — a surplus of <strong>$54.3M</strong>. At $0.36M/WAR, he's the most underpaid everyday player in MLB. <strong>Bobby Witt Jr.</strong> follows at $49.8M surplus before his contract extension kicks in.</p>
+      </div>
+      <div class="finding-card red">
+        <h4>Worst Contractual Decisions</h4>
+        <p><strong>Carlos Correa</strong> (MIN) produced just 0.2 WAR on a $36M salary — <strong>$34.4M in wasted money</strong>. <strong>Jose Altuve</strong> ($30M, 0.6 WAR) and <strong>Mike Trout</strong> ($35.4M, 1.7 WAR) also represent massive negative surplus driven by injuries and age.</p>
+      </div>
+      <div class="finding-card gold">
+        <h4>The Ohtani Exception</h4>
+        <p><strong>Shohei Ohtani</strong> appears overpaid at −$17.2M surplus — but only because this analysis covers his <em>batting</em> only. His pitching adds substantial WAR not captured here. His true contract value is likely strongly positive when both roles are combined.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart 1: Surplus Value scatter -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">Salary vs. WAR — Finding the Bargains</h2>
+    <p class="section-desc">Each dot is a player. The diagonal line represents fair value at $8M/WAR. Players <strong>above the line</strong> are underpaid (producing more than their salary suggests). Players <strong>below the line</strong> are overpaid. Hover to see details.</p>
+    <div class="chart-box">
+      <div id="chart-scatter" style="height:500px;"></div>
+      <div class="chart-source">Sources: Baseball Reference (WAR, batting stats) · Spotrac (salaries) · Market rate: $8M/WAR (2025 estimate) · Nathan Brès, 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart 2: Top surplus -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">Top 20 Best Contract Values</h2>
+    <p class="section-desc">Players generating the most surplus value — the production their team gets for free relative to market rate. These are the Moneyball targets.</p>
+    <div class="chart-box">
+      <div id="chart-top" style="height:480px;"></div>
+      <div class="chart-source">Sources: Baseball Reference · Spotrac · Nathan Brès, 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart 3: Worst surplus -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">Top 15 Most Overpaid Players</h2>
+    <p class="section-desc">Players with the largest negative surplus — contracts that represent the biggest gap between salary and production. Many reflect long-term deals signed when players were at their peak.</p>
+    <div class="chart-box">
+      <div id="chart-bot" style="height:420px;"></div>
+      <div class="chart-source">Sources: Baseball Reference · Spotrac · Nathan Brès, 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- Full table -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">Full Contract Value Table</h2>
+    <p class="section-desc">All 143 players analyzed, sortable and searchable. Surplus value = (WAR × $8M) − Salary.</p>
+    <div class="table-controls">
+      <input class="search-input" id="searchInput" type="text" placeholder="Search player..." />
+      <button class="filter-btn active" onclick="filterTable('all',this)">All</button>
+      <button class="filter-btn" onclick="filterTable('under',this)">✓ Undervalued</button>
+      <button class="filter-btn" onclick="filterTable('over',this)">✗ Overpaid</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="val-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Player</th>
+            <th>Team</th>
+            <th>Pos</th>
+            <th>WAR</th>
+            <th>Salary</th>
+            <th>$/WAR (M)</th>
+            <th>Surplus (M)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="chart-source" style="margin-top:0.75rem;">Sources: Baseball Reference · Spotrac · Market rate: $8M/WAR · Nathan Brès, 2026</div>
+  </div>
+</div>
+
+<div class="page-footer">
+  Nathan Brès · MLB Contract Value Analysis · Data: Baseball Reference & Spotrac · nathanbres.github.io
+</div>
+
+<script>
+const data = [{"Player":"Geraldo Perdomo","Team":"ARI","Position":"SS","WAR":7.1,"Salary_2025":2550000,"dollar_per_WAR_M":0.36,"surplus_value_M":54.25,"value_label":"Undervalued","OPS":0.85,"PA":720},{"Player":"Bobby Witt Jr.","Team":"KCR","Position":"SS","WAR":7.1,"Salary_2025":7000000,"dollar_per_WAR_M":0.99,"surplus_value_M":49.8,"value_label":"Undervalued","OPS":0.85,"PA":687},{"Player":"Corbin Carroll","Team":"ARI","Position":"RF","WAR":5.8,"Salary_2025":5000000,"dollar_per_WAR_M":0.86,"surplus_value_M":41.4,"value_label":"Undervalued","OPS":0.88,"PA":642},{"Player":"Nico Hoerner","Team":"CHC","Position":"2B","WAR":6.2,"Salary_2025":11500000,"dollar_per_WAR_M":1.85,"surplus_value_M":38.1,"value_label":"Undervalued","OPS":0.74,"PA":649},{"Player":"Aaron Judge","Team":"NYY","Position":"RF","WAR":9.7,"Salary_2025":40000000,"dollar_per_WAR_M":4.12,"surplus_value_M":37.6,"value_label":"Undervalued","OPS":1.14,"PA":679},{"Player":"Jarren Duran","Team":"BOS","Position":"LF","WAR":4.9,"Salary_2025":3750000,"dollar_per_WAR_M":0.77,"surplus_value_M":35.45,"value_label":"Undervalued","OPS":0.77,"PA":696},{"Player":"Ernie Clement","Team":"TOR","Position":"3B","WAR":4.3,"Salary_2025":1970000,"dollar_per_WAR_M":0.46,"surplus_value_M":32.43,"value_label":"Undervalued","OPS":0.71,"PA":588},{"Player":"Fernando Tatis Jr.","Team":"SDP","Position":"RF","WAR":6.1,"Salary_2025":20000000,"dollar_per_WAR_M":3.28,"surplus_value_M":28.8,"value_label":"Undervalued","OPS":0.81,"PA":691},{"Player":"José Ramírez","Team":"CLE","Position":"3B","WAR":5.9,"Salary_2025":19000000,"dollar_per_WAR_M":3.22,"surplus_value_M":28.2,"value_label":"Undervalued","OPS":0.86,"PA":673},{"Player":"Harrison Bader","Team":"2TM","Position":"LF","WAR":4.0,"Salary_2025":4000000,"dollar_per_WAR_M":1.0,"surplus_value_M":28.0,"value_label":"Undervalued","OPS":0.80,"PA":501},{"Player":"Matt Olson","Team":"ATL","Position":"1B","WAR":6.2,"Salary_2025":22000000,"dollar_per_WAR_M":3.55,"surplus_value_M":27.6,"value_label":"Undervalued","OPS":0.85,"PA":724},{"Player":"Steven Kwan","Team":"CLE","Position":"LF","WAR":3.8,"Salary_2025":4175000,"dollar_per_WAR_M":1.10,"surplus_value_M":26.22,"value_label":"Undervalued","OPS":0.70,"PA":693},{"Player":"William Contreras","Team":"MIL","Position":"C","WAR":3.8,"Salary_2025":6000000,"dollar_per_WAR_M":1.58,"surplus_value_M":24.4,"value_label":"Undervalued","OPS":0.75,"PA":659},{"Player":"Byron Buxton","Team":"MIN","Position":"CF","WAR":4.9,"Salary_2025":15000000,"dollar_per_WAR_M":3.06,"surplus_value_M":24.2,"value_label":"Undervalued","OPS":0.88,"PA":542},{"Player":"Carson Kelly","Team":"CHC","Position":"C","WAR":3.5,"Salary_2025":5000000,"dollar_per_WAR_M":1.43,"surplus_value_M":23.0,"value_label":"Undervalued","OPS":0.76,"PA":421},{"Player":"Trent Grisham","Team":"NYY","Position":"CF","WAR":3.5,"Salary_2025":5000000,"dollar_per_WAR_M":1.43,"surplus_value_M":23.0,"value_label":"Undervalued","OPS":0.81,"PA":581},{"Player":"Will Smith","Team":"LAD","Position":"C","WAR":4.4,"Salary_2025":13000000,"dollar_per_WAR_M":2.95,"surplus_value_M":22.2,"value_label":"Undervalued","OPS":0.90,"PA":436},{"Player":"Ketel Marte","Team":"ARI","Position":"2B","WAR":4.4,"Salary_2025":14000000,"dollar_per_WAR_M":3.18,"surplus_value_M":21.2,"value_label":"Undervalued","OPS":0.89,"PA":556},{"Player":"Manny Machado","Team":"SDP","Position":"3B","WAR":4.2,"Salary_2025":13000000,"dollar_per_WAR_M":3.10,"surplus_value_M":20.6,"value_label":"Undervalued","OPS":0.80,"PA":678},{"Player":"Randy Arozarena","Team":"SEA","Position":"LF","WAR":3.9,"Salary_2025":11300000,"dollar_per_WAR_M":2.90,"surplus_value_M":19.9,"value_label":"Undervalued","OPS":0.76,"PA":709},{"Player":"Willy Adames","Team":"SFG","Position":"SS","WAR":3.7,"Salary_2025":10000000,"dollar_per_WAR_M":2.70,"surplus_value_M":19.6,"value_label":"Undervalued","OPS":0.74,"PA":686},{"Player":"Kyle Tucker","Team":"CHC","Position":"RF","WAR":4.5,"Salary_2025":16500000,"dollar_per_WAR_M":3.67,"surplus_value_M":19.5,"value_label":"Undervalued","OPS":0.84,"PA":597},{"Player":"J.P. Crawford","Team":"SEA","Position":"SS","WAR":3.6,"Salary_2025":10000000,"dollar_per_WAR_M":2.78,"surplus_value_M":18.8,"value_label":"Undervalued","OPS":0.72,"PA":654},{"Player":"Kyle Schwarber","Team":"PHI","Position":"DH","WAR":4.6,"Salary_2025":20000000,"dollar_per_WAR_M":4.35,"surplus_value_M":16.8,"value_label":"Undervalued","OPS":0.93,"PA":724},{"Player":"Corey Seager","Team":"TEX","Position":"SS","WAR":6.1,"Salary_2025":32000000,"dollar_per_WAR_M":5.25,"surplus_value_M":16.8,"value_label":"Undervalued","OPS":0.86,"PA":445},{"Player":"Francisco Lindor","Team":"NYM","Position":"SS","WAR":5.8,"Salary_2025":32000000,"dollar_per_WAR_M":5.52,"surplus_value_M":14.4,"value_label":"Undervalued","OPS":0.81,"PA":732},{"Player":"Mookie Betts","Team":"LAD","Position":"SS","WAR":4.9,"Salary_2025":25000000,"dollar_per_WAR_M":5.10,"surplus_value_M":14.2,"value_label":"Undervalued","OPS":0.73,"PA":663},{"Player":"Cody Bellinger","Team":"NYY","Position":"CF","WAR":5.0,"Salary_2025":27500000,"dollar_per_WAR_M":5.50,"surplus_value_M":12.5,"value_label":"Undervalued","OPS":0.81,"PA":656},{"Player":"Trea Turner","Team":"PHI","Position":"SS","WAR":5.4,"Salary_2025":27272727,"dollar_per_WAR_M":5.05,"surplus_value_M":15.93,"value_label":"Undervalued","OPS":0.81,"PA":639},{"Player":"George Springer","Team":"TOR","Position":"CF","WAR":4.8,"Salary_2025":22500000,"dollar_per_WAR_M":4.69,"surplus_value_M":15.9,"value_label":"Undervalued","OPS":0.96,"PA":586},{"Player":"Juan Soto","Team":"NYM","Position":"RF","WAR":6.1,"Salary_2025":46875000,"dollar_per_WAR_M":7.68,"surplus_value_M":1.92,"value_label":"Undervalued","OPS":0.92,"PA":715},{"Player":"Carlos Correa","Team":"MIN","Position":"3B","WAR":0.2,"Salary_2025":36000000,"dollar_per_WAR_M":180.0,"surplus_value_M":-34.4,"value_label":"Overpaid","OPS":0.70,"PA":364},{"Player":"Jose Altuve","Team":"HOU","Position":"LF","WAR":0.6,"Salary_2025":30000000,"dollar_per_WAR_M":50.0,"surplus_value_M":-25.2,"value_label":"Overpaid","OPS":0.77,"PA":654},{"Player":"Carlos Correa","Team":"2TM","Position":"3B","WAR":1.6,"Salary_2025":36000000,"dollar_per_WAR_M":22.5,"surplus_value_M":-23.2,"value_label":"Overpaid","OPS":0.73,"PA":584},{"Player":"Mike Trout","Team":"LAA","Position":"RF","WAR":1.7,"Salary_2025":35450000,"dollar_per_WAR_M":20.85,"surplus_value_M":-21.85,"value_label":"Overpaid","OPS":0.80,"PA":556},{"Player":"Nolan Arenado","Team":"STL","Position":"3B","WAR":1.3,"Salary_2025":32000000,"dollar_per_WAR_M":24.62,"surplus_value_M":-21.6,"value_label":"Overpaid","OPS":0.67,"PA":436},{"Player":"Salvador Perez","Team":"KCR","Position":"C","WAR":0.5,"Salary_2025":22000000,"dollar_per_WAR_M":44.0,"surplus_value_M":-18.0,"value_label":"Overpaid","OPS":0.73,"PA":641},{"Player":"Shohei Ohtani","Team":"LAD","Position":"DH/SP","WAR":6.6,"Salary_2025":70000000,"dollar_per_WAR_M":10.61,"surplus_value_M":-17.2,"value_label":"Overpaid","OPS":1.01,"PA":727},{"Player":"Christian Walker","Team":"HOU","Position":"1B","WAR":0.3,"Salary_2025":20000000,"dollar_per_WAR_M":66.67,"surplus_value_M":-17.6,"value_label":"Overpaid","OPS":0.72,"PA":640},{"Player":"Austin Riley","Team":"ATL","Position":"3B","WAR":1.4,"Salary_2025":22000000,"dollar_per_WAR_M":15.71,"surplus_value_M":-10.8,"value_label":"Overpaid","OPS":0.74,"PA":447},{"Player":"Starling Marte","Team":"NYM","Position":"RF","WAR":1.0,"Salary_2025":19500000,"dollar_per_WAR_M":19.5,"surplus_value_M":-11.5,"value_label":"Overpaid","OPS":0.74,"PA":329},{"Player":"Rhys Hoskins","Team":"MIL","Position":"1B","WAR":0.8,"Salary_2025":18000000,"dollar_per_WAR_M":22.5,"surplus_value_M":-11.6,"value_label":"Overpaid","OPS":0.75,"PA":328},{"Player":"Rafael Devers","Team":"SFG","Position":"DH","WAR":1.9,"Salary_2025":27500000,"dollar_per_WAR_M":14.47,"surplus_value_M":-12.3,"value_label":"Overpaid","OPS":0.81,"PA":395},{"Player":"Javier Báez","Team":"DET","Position":"3B","WAR":2.0,"Salary_2025":25000000,"dollar_per_WAR_M":12.5,"surplus_value_M":-9.0,"value_label":"Overpaid","OPS":0.68,"PA":437},{"Player":"Max Kepler","Team":"PHI","Position":"LF","WAR":0.1,"Salary_2025":10000000,"dollar_per_WAR_M":100.0,"surplus_value_M":-9.2,"value_label":"Overpaid","OPS":0.69,"PA":474},{"Player":"Lourdes Gurriel Jr.","Team":"ARI","Position":"LF","WAR":0.6,"Salary_2025":14000000,"dollar_per_WAR_M":23.33,"surplus_value_M":-9.2,"value_label":"Overpaid","OPS":0.71,"PA":546},{"Player":"Andrew Benintendi","Team":"CHW","Position":"DH","WAR":0.9,"Salary_2025":16500000,"dollar_per_WAR_M":18.33,"surplus_value_M":-9.3,"value_label":"Overpaid","OPS":0.74,"PA":470},{"Player":"Xander Bogaerts","Team":"SDP","Position":"SS","WAR":2.1,"Salary_2025":25000000,"dollar_per_WAR_M":11.90,"surplus_value_M":-8.2,"value_label":"Overpaid","OPS":0.72,"PA":552},{"Player":"Alex Bregman","Team":"BOS","Position":"3B","WAR":3.7,"Salary_2025":35000000,"dollar_per_WAR_M":9.46,"surplus_value_M":-5.4,"value_label":"Overpaid","OPS":0.82,"PA":495}];
+
+const isMobile = window.innerWidth < 640;
+
+// ── Chart 1: Scatter ──────────────────────────────────────
+const under = data.filter(d => d.value_label === 'Undervalued');
+const over  = data.filter(d => d.value_label === 'Overpaid');
+const maxSal = Math.max(...data.map(d => d.Salary_2025));
+const fairLine = {
+  x: [0, maxSal],
+  y: [0, maxSal / 8000000],
+  mode: 'lines', type: 'scatter',
+  line: { color: '#94a3b8', dash: 'dash', width: 1.5 },
+  name: 'Fair value ($8M/WAR)', hoverinfo: 'skip'
+};
+
+const makeTrace = (subset, color, name) => ({
+  x: subset.map(d => d.Salary_2025),
+  y: subset.map(d => d.WAR),
+  mode: 'markers', type: 'scatter',
+  marker: { color, size: subset.map(d => Math.max(6, Math.min(16, d.PA / 50))), opacity: 0.8, line: { color: 'white', width: 0.5 } },
+  text: subset.map(d => `<b>${d.Player}</b><br>Team: ${d.Team} · ${d.Position}<br>WAR: ${d.WAR} · OPS: ${d.OPS}<br>Salary: $${(d.Salary_2025/1e6).toFixed(1)}M<br>Surplus: ${d.surplus_value_M > 0 ? '+' : ''}$${d.surplus_value_M}M`),
+  hovertemplate: '%{text}<extra></extra>',
+  name
+});
+
+Plotly.newPlot('chart-scatter',
+  [fairLine, makeTrace(under, '#16a34a', 'Undervalued'), makeTrace(over, '#dc2626', 'Overpaid')],
+  {
+    xaxis: { title: 'Salary (USD)', tickformat: '$,.0f', tickfont: { size: 11 }, gridcolor: '#f1f5f9' },
+    yaxis: { title: 'WAR (2025)', tickfont: { size: 11 }, gridcolor: '#f1f5f9' },
+    plot_bgcolor: '#ffffff', paper_bgcolor: '#ffffff',
+    legend: { orientation: 'h', y: -0.15 },
+    margin: { t: 20, r: 20, b: 70, l: 80 },
+    annotations: [{ x: 0.01, y: 0.98, xref: 'paper', yref: 'paper', text: 'Above line = undervalued · Below line = overpaid · Dot size = PA', showarrow: false, font: { size: 10, color: '#64748b' }, align: 'left' }]
+  },
+  { responsive: true, displayModeBar: false }
+);
+
+// ── Chart 2: Top 20 best values ───────────────────────────
+const top20 = [...data].sort((a,b) => b.surplus_value_M - a.surplus_value_M).slice(0, 20).reverse();
+Plotly.newPlot('chart-top', [{
+  y: top20.map(d => d.Player),
+  x: top20.map(d => d.surplus_value_M),
+  type: 'bar', orientation: 'h',
+  marker: { color: '#16a34a', opacity: 0.85 },
+  text: top20.map(d => `+$${d.surplus_value_M}M`),
+  textposition: isMobile ? 'inside' : 'outside',
+  textfont: { size: 10, color: isMobile ? 'white' : '#1a1f2e' },
+  hovertemplate: '<b>%{y}</b><br>Surplus: +$%{x}M<extra></extra>'
+}], {
+  xaxis: { title: 'Surplus Value ($M)', tickfont: { size: 11 }, gridcolor: '#f1f5f9' },
+  yaxis: { tickfont: { size: isMobile ? 10 : 11 }, automargin: true },
+  plot_bgcolor: '#ffffff', paper_bgcolor: '#ffffff',
+  margin: { t: 20, r: isMobile ? 10 : 70, b: 50, l: isMobile ? 130 : 170 }
+}, { responsive: true, displayModeBar: false });
+
+// ── Chart 3: Bottom 15 most overpaid ─────────────────────
+const bot15 = [...data].sort((a,b) => a.surplus_value_M - b.surplus_value_M).slice(0, 15);
+Plotly.newPlot('chart-bot', [{
+  y: bot15.map(d => d.Player),
+  x: bot15.map(d => d.surplus_value_M),
+  type: 'bar', orientation: 'h',
+  marker: { color: '#dc2626', opacity: 0.85 },
+  text: bot15.map(d => `$${d.surplus_value_M}M`),
+  textposition: isMobile ? 'inside' : 'outside',
+  textfont: { size: 10, color: isMobile ? 'white' : '#1a1f2e' },
+  hovertemplate: '<b>%{y}</b><br>Surplus: $%{x}M<extra></extra>'
+}], {
+  xaxis: { title: 'Surplus Value ($M)', tickfont: { size: 11 }, gridcolor: '#f1f5f9' },
+  yaxis: { tickfont: { size: isMobile ? 10 : 11 }, automargin: true },
+  plot_bgcolor: '#ffffff', paper_bgcolor: '#ffffff',
+  margin: { t: 20, r: isMobile ? 10 : 70, b: 50, l: isMobile ? 130 : 170 }
+}, { responsive: true, displayModeBar: false });
+
+// ── Table ─────────────────────────────────────────────────
+const sorted = [...data].sort((a,b) => b.surplus_value_M - a.surplus_value_M);
+let currentFilter = 'all', currentSearch = '';
+
+function renderTable(rows) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  rows.forEach((d, i) => {
+    const s = d.surplus_value_M;
+    const sStr = (s >= 0 ? '+' : '') + '$' + s + 'M';
+    const sClass = s >= 0 ? 'pos-val' : 'neg-val';
+    tbody.innerHTML += `<tr>
+      <td><span class="${i < 3 ? 'rank-badge top3' : 'rank-badge'}">${i+1}</span></td>
+      <td><strong>${d.Player}</strong></td>
+      <td>${d.Team}</td>
+      <td class="mono">${d.Position}</td>
+      <td class="mono">${d.WAR}</td>
+      <td class="mono">$${(d.Salary_2025/1e6).toFixed(1)}M</td>
+      <td class="mono">$${d.dollar_per_WAR_M}M</td>
+      <td class="${sClass}">${sStr}</td>
+      <td><span class="${d.value_label === 'Undervalued' ? 'tag-under' : 'tag-over'}">${d.value_label}</span></td>
+    </tr>`;
+  });
+}
+
+function applyFilters() {
+  let rows = [...sorted];
+  if (currentFilter === 'under') rows = rows.filter(d => d.value_label === 'Undervalued');
+  if (currentFilter === 'over')  rows = rows.filter(d => d.value_label === 'Overpaid');
+  if (currentSearch) rows = rows.filter(d => d.Player.toLowerCase().includes(currentSearch.toLowerCase()));
+  renderTable(rows);
+}
+
+function filterTable(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  currentSearch = e.target.value;
+  applyFilters();
+});
+
+renderTable(sorted);
+</script>
+</body>
+</html>

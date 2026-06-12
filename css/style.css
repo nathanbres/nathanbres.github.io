@@ -245,6 +245,9 @@ section { padding: 6rem 2rem; width: 100%; text-align: center; }
   background-repeat: no-repeat;
   background-color: #0a0d14;
 }
+.card-thumb--contract {
+  background: linear-gradient(135deg, #1a2e1a 0%, #0f200f 100%);
+}
 .card-thumb--ops {
   background-image: url('../img/ops-thumb.svg');
   background-size: cover;
