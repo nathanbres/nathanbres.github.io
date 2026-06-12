@@ -307,8 +307,20 @@
     @media (max-width: 640px) {
       .stats-inner { gap: 1rem; }
       .stat-divider { display: none; }
-      .proj-table { font-size: 0.78rem; }
-      .proj-table th, .proj-table td { padding: 0.5rem 0.6rem; }
+      .proj-table { font-size: 0.75rem; }
+      .proj-table th, .proj-table td { padding: 0.4rem 0.5rem; }
+      /* Hide less important columns on mobile */
+      .proj-table th:nth-child(8),
+      .proj-table td:nth-child(8),
+      .proj-table th:nth-child(9),
+      .proj-table td:nth-child(9) { display: none; }
+      .chart-source {
+        font-size: 0.65rem;
+        text-align: left;
+        line-height: 1.4;
+      }
+      .method-grid { grid-template-columns: 1fr; }
+      .limit-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -411,6 +423,9 @@
   <div class="container">
     <h2 class="section-title">2027 OPS Projections</h2>
     <p class="section-desc">Projected OPS for the 2027 season based on 2026 performance. Gold bars indicate players expected to improve relative to their 2026 OPS.</p>
+    <div style="display:inline-flex; align-items:center; gap:0.5rem; background:#fef3c7; border:1px solid #d97706; padding:0.5rem 1rem; margin-bottom:1.25rem; font-size:0.8rem; color:#92400e; font-family:var(--mono);">
+      ⚠ Analysis as of June 12, 2026 · Only players with 300+ PA included · 2026 season in progress
+    </div>
     <div class="chart-box" style="margin-bottom:2rem;">
       <div id="chart-proj" style="height:480px;"></div>
       <div class="chart-source">Source: Baseball Reference (baseball-reference.com) · Model: Linear Regression, scikit-learn · Nathan Brès, 2026</div>
@@ -548,21 +563,24 @@ Plotly.newPlot('chart-errors', [{
 const projColors = projections2027.map(d => d.OPS_change >= 0 ? '#d97706' : '#2563eb');
 const projReversed = [...projections2027].reverse();
 
+const isMobile = window.innerWidth < 640;
+
 Plotly.newPlot('chart-proj', [{
   y: projReversed.map(d => d.Player),
   x: projReversed.map(d => d.OPS_projected_2027),
   type: 'bar', orientation: 'h',
   marker: { color: projReversed.map(d => d.OPS_change >= 0 ? '#d97706' : '#2563eb'), opacity: 0.85 },
   text: projReversed.map(d => d.OPS_projected_2027.toFixed(3)),
-  textposition: 'outside', textfont: { size: 10 },
+  textposition: isMobile ? 'inside' : 'outside',
+  textfont: { size: 10, color: isMobile ? 'white' : '#1a1f2e' },
   hovertemplate: '<b>%{y}</b><br>Projected 2027 OPS: %{x:.3f}<extra></extra>',
   name: 'Projected OPS'
 }], {
-  xaxis: { title: 'Projected 2027 OPS', tickfont: { size: 11 }, gridcolor: '#f1f5f9', range: [0, 1.0] },
-  yaxis: { tickfont: { size: 11 }, automargin: true },
+  xaxis: { title: 'Projected 2027 OPS', tickfont: { size: 11 }, gridcolor: '#f1f5f9', range: [0, isMobile ? 1.05 : 1.0] },
+  yaxis: { tickfont: { size: isMobile ? 10 : 11 }, automargin: true },
   plot_bgcolor: '#ffffff', paper_bgcolor: '#ffffff',
-  margin: { t: 20, r: 60, b: 50, l: 160 },
-  annotations: [{
+  margin: { t: 20, r: isMobile ? 10 : 60, b: 50, l: isMobile ? 120 : 160 },
+  annotations: isMobile ? [] : [{
     x: 0.99, y: 0.01, xref: 'paper', yref: 'paper',
     text: 'Gold = improvement expected · Blue = regression expected',
     showarrow: false, font: { size: 10, color: '#64748b' }, align: 'right'
