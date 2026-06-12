@@ -216,9 +216,7 @@ section { padding: 6rem 2rem; width: 100%; text-align: center; }
 .portfolio-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5px;
-  background: var(--border);
-  border: 1px solid var(--border);
+  gap: 1.5rem;
 }
 .portfolio-grid--single {
   grid-template-columns: minmax(320px, 480px);
@@ -230,6 +228,7 @@ section { padding: 6rem 2rem; width: 100%; text-align: center; }
   transition: background 0.25s;
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--border);
 }
 .port-card:hover { background: var(--navy-light); }
 .port-card:hover .card-cta { color: var(--gold); }
@@ -247,7 +246,10 @@ section { padding: 6rem 2rem; width: 100%; text-align: center; }
   background-color: #0a0d14;
 }
 .card-thumb--ops {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0f2535 100%);
+  background-image: url('../img/ops-thumb.svg');
+  background-size: cover;
+  background-position: center;
+  background-color: #0a1628;
 }
   background-image: url('../img/lineup-thumb.png');
   background-size: contain;
