@@ -105,6 +105,7 @@ ul { list-style: none; }
   margin: 0 auto;
   width: 100%;
   padding: 4rem 0;
+  text-align: center;
 }
 .diamond-bg svg { width: 60%; max-width: 700px; opacity: 0.8; right: 0; position: absolute; }
 .hero-eyebrow {
@@ -130,7 +131,7 @@ ul { list-style: none; }
   font-weight: 300;
   color: var(--muted);
   max-width: 460px;
-  margin-bottom: 3rem;
+  margin: 0 auto 3rem;
   line-height: 1.7;
 }
 .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
@@ -187,7 +188,7 @@ ul { list-style: none; }
 /* ═══════════════════════════════════════
    SECTIONS
 ═══════════════════════════════════════ */
-section { padding: 6rem 2rem; width: 100%; }
+section { padding: 6rem 2rem; width: 100%; text-align: center; }
 .section-inner { max-width: var(--max-w); margin: 0 auto; width: 100%; }
 .section-header { margin-bottom: 3rem; }
 .section-label {
@@ -293,12 +294,12 @@ section { padding: 6rem 2rem; width: 100%; }
 #about { background: var(--navy); }
 
 .about-inner {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4rem;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
 }
-.about-photo-wrap { padding-top: 0.25rem; }
+.about-photo-wrap { padding-top: 0; }
 .about-photo {
   width: 130px;
   height: 130px;
@@ -315,6 +316,8 @@ section { padding: 6rem 2rem; width: 100%; }
   margin-bottom: 1.25rem;
   line-height: 1.8;
   max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .about-text p strong { color: var(--white); font-weight: 500; }
 
@@ -322,9 +325,12 @@ section { padding: 6rem 2rem; width: 100%; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  margin: 2rem 0 2.5rem;
+  margin: 2rem auto 2.5rem;
   padding-top: 2rem;
   border-top: 1px solid var(--border);
+  max-width: 640px;
+  width: 100%;
+  text-align: left;
 }
 .about-col h4 {
   font-family: var(--font-mono);
@@ -356,11 +362,13 @@ section { padding: 6rem 2rem; width: 100%; }
 ═══════════════════════════════════════ */
 #contact { background: var(--navy-mid); }
 .contact-form {
-  max-width: var(--max-w);
+  max-width: 640px;
   width: 100%;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  text-align: left;
 }
 .form-row {
   display: grid;
@@ -408,6 +416,7 @@ section { padding: 6rem 2rem; width: 100%; }
   gap: 2rem;
   margin-top: 3rem;
   flex-wrap: wrap;
+  justify-content: center;
 }
 .contact-link {
   display: flex;
