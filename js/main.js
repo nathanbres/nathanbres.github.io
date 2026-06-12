@@ -12,7 +12,7 @@ window.addEventListener('scroll', () => {
 
 // ── Modal system ──────────────────────────────
 const overlay   = document.getElementById('modal-overlay');
-const cards     = document.querySelectorAll('.port-card[data-modal]');
+const cards     = document.querySelectorAll('.port-card');
 const closebtns = document.querySelectorAll('.modal-close');
 
 function openModal(id) {
