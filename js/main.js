@@ -1,33 +1,14 @@
-/* ═══════════════════════════════════
+/* ═══════════════════════════════════════
    PORTFOLIO — main.js
-═══════════════════════════════════ */
+═══════════════════════════════════════ */
 
 // ── Navbar scroll effect ──────────────────────
 const navbar = document.getElementById('navbar');
 window.addEventListener('scroll', () => {
   navbar.style.background = window.scrollY > 40
-    ? 'rgba(10, 22, 40, 0.98)'
-    : 'rgba(10, 22, 40, 0.9)';
+    ? 'rgba(10, 22, 40, 0.99)'
+    : 'rgba(10, 22, 40, 0.92)';
 }, { passive: true });
-
-// ── Active nav link on scroll ─────────────────
-const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('.nav-links a');
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      navLinks.forEach(link => {
-        link.classList.toggle(
-          'active',
-          link.getAttribute('href') === `#${entry.target.id}`
-        );
-      });
-    }
-  });
-}, { threshold: 0.4 });
-
-sections.forEach(s => observer.observe(s));
 
 // ── Modal system ──────────────────────────────
 const overlay   = document.getElementById('modal-overlay');
@@ -41,7 +22,6 @@ function openModal(id) {
   modal.classList.add('active');
   overlay.removeAttribute('aria-hidden');
   document.body.style.overflow = 'hidden';
-  // focus the close button for accessibility
   setTimeout(() => modal.querySelector('.modal-close')?.focus(), 50);
 }
 
@@ -62,16 +42,17 @@ cards.forEach(card => {
 });
 
 closebtns.forEach(btn => btn.addEventListener('click', closeAllModals));
-
-overlay.addEventListener('click', e => {
-  if (e.target === overlay) closeAllModals();
-});
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeAllModals();
-});
+overlay.addEventListener('click', e => { if (e.target === overlay) closeAllModals(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModals(); });
 
 // ── Scroll reveal ─────────────────────────────
+const style = document.createElement('style');
+style.textContent = `
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .revealed { opacity: 1; transform: none; }
+`;
+document.head.appendChild(style);
+
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
@@ -81,77 +62,48 @@ const revealObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.1 });
 
-document.querySelectorAll('.port-card, .about-block, .about-bio').forEach(el => {
+document.querySelectorAll('.port-card, .about-text p, .about-details').forEach(el => {
   el.classList.add('reveal');
   revealObserver.observe(el);
 });
 
-// Inject reveal CSS dynamically to avoid FOUC
-const style = document.createElement('style');
-style.textContent = `
-  .reveal {
-    opacity: 0;
-    transform: translateY(18px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-  .revealed {
-    opacity: 1;
-    transform: none;
-  }
-`;
-document.head.appendChild(style);
+// ── Contact form → Formspree → nathanbs48@gmail.com ──
+const form       = document.getElementById('contactForm');
+const formStatus = document.getElementById('formStatus');
 
-// ── Contact form feedback ─────────────────────
-const form = document.querySelector('.contact-form');
 if (form) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = form.querySelector('button[type="submit"]');
-    const originalText = btn.textContent;
     btn.textContent = 'Sending…';
     btn.disabled = true;
+    formStatus.textContent = '';
+
+    const data = {
+      name:    form.name.value,
+      email:   form.email.value,
+      message: form.message.value,
+    };
 
     try {
-      const data = new FormData(form);
-      const action = form.getAttribute('action');
-
-      if (action.includes('YOUR_FORM_ID')) {
-        // Demo mode — no real submission
-        await new Promise(r => setTimeout(r, 800));
-        btn.textContent = 'Message sent ✓';
-        btn.style.background = '#4a7c5a';
-        form.reset();
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.style.background = '';
-          btn.disabled = false;
-        }, 3000);
-        return;
-      }
-
-      const res = await fetch(action, {
+      const res = await fetch('https://formspree.io/f/xwpbvqbj', {
         method: 'POST',
-        body: data,
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data),
       });
 
       if (res.ok) {
-        btn.textContent = 'Message sent ✓';
-        btn.style.background = '#4a7c5a';
+        formStatus.textContent = '✓ Message sent — I\'ll get back to you soon.';
         form.reset();
+        btn.textContent = 'Send';
+        btn.disabled = false;
       } else {
-        btn.textContent = 'Error — try again';
-        btn.style.background = '#7c2a2a';
+        throw new Error('Server error');
       }
     } catch {
-      btn.textContent = 'Error — try again';
-      btn.style.background = '#7c2a2a';
-    }
-
-    setTimeout(() => {
-      btn.textContent = originalText;
-      btn.style.background = '';
+      formStatus.textContent = 'Something went wrong — please try again or email nathanbs48@gmail.com directly.';
+      btn.textContent = 'Send';
       btn.disabled = false;
-    }, 3000);
+    }
   });
 }
