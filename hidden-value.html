@@ -464,5 +464,72 @@ document.getElementById('searchInput').addEventListener('input', e => {
 
 renderTable();
 </script>
+
+<!-- Glossary Drawer -->
+<div id="gl-overlay"></div>
+<aside id="gl-drawer" role="dialog" aria-label="Glossary" aria-modal="true">
+  <div id="gl-header">
+    <div><h2>Glossary</h2><span>Moneyball 2025</span></div>
+    <button id="gl-close" aria-label="Close glossary">&#x2715;</button>
+  </div>
+  <div id="gl-body"><dl>
+      <div class="gl-item"><dt class="gl-term">WAR</dt><dd class="gl-def">Wins Above Replacement. Estimates how many wins a player adds over a replacement-level player. 2 = average, 5+ = All-Star, 8+ = MVP-caliber.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Hidden Value Score</dt><dd class="gl-def">Composite score (0 to 1) combining consistency, WAR floor, market recognition, salary gap, WAR trend, and availability. Higher = better hidden value.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Consistency Score</dt><dd class="gl-def">Core metric of this model: Avg WAR / (1 + Std Dev). Rewards reliable year-over-year production. Higher = more stable output.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Std Dev (WAR)</dt><dd class="gl-def">Standard deviation of a player's WAR across seasons. Low std dev = consistent output; high std dev = volatile, boom-or-bust performance.</dd></div>
+      <div class="gl-item"><dt class="gl-term">WAR Floor</dt><dd class="gl-def">The lowest single-season WAR a player posted across the analyzed window. Reflects downside risk: how bad was their worst year?</dd></div>
+      <div class="gl-item"><dt class="gl-term">WAR Trend</dt><dd class="gl-def">Linear slope of WAR over time (positive = improving, negative = declining). Computed via least-squares regression on season-by-season WAR values.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Salary Gap</dt><dd class="gl-def">Expected salary (Avg WAR x $8M) minus actual salary in $M. A larger gap means the player is more underpaid relative to their production.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Market Recognition</dt><dd class="gl-def">How much the market has already priced in a player's talent, derived from their salary level. Low recognition = the market has not caught up yet.</dd></div>
+      <div class="gl-item"><dt class="gl-term">CV (Coefficient of Variation)</dt><dd class="gl-def">Standard deviation divided by the mean. Measures relative variability across different production levels. Used internally to normalize consistency.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Pre-Arb</dt><dd class="gl-def">Pre-Arbitration. Players in their first ~3 years of MLB service, earning near the league minimum (~$760K-$800K in 2025).</dd></div>
+  </dl></div>
+</aside>
+<button id="gl-fab" aria-label="Open glossary">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="7" x2="8" y2="11.5"/><circle cx="8" cy="5" r=".6" fill="currentColor" stroke="none"/></svg>
+  Glossary
+</button>
+<style>
+  /* ── Glossary Drawer ─────────────────────────────── */
+  #gl-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:998;opacity:0;pointer-events:none;transition:opacity .25s}
+  #gl-overlay.open{opacity:1;pointer-events:all}
+  #gl-drawer{position:fixed;top:0;right:0;height:100%;width:min(400px,92vw);background:#fff;z-index:999;
+    box-shadow:-4px 0 24px rgba(0,0,0,.12);transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    display:flex;flex-direction:column;overflow:hidden}
+  #gl-drawer.open{transform:translateX(0)}
+  #gl-header{padding:1.1rem 1.25rem .9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  #gl-header h2{font-size:.95rem;font-weight:700;color:var(--navy);letter-spacing:.01em;margin:0}
+  #gl-header span{font-size:.72rem;color:var(--muted);font-family:var(--mono)}
+  #gl-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.2rem;padding:.25rem;line-height:1;border-radius:4px}
+  #gl-close:hover{color:var(--navy);background:var(--bg2)}
+  #gl-body{overflow-y:auto;padding:1rem 1.25rem 2rem;flex:1}
+  .gl-item{margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border)}
+  .gl-item:last-child{border-bottom:none}
+  .gl-term{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--blue);margin:0 0 .3rem}
+  .gl-def{font-size:.82rem;color:var(--text);line-height:1.55;margin:0}
+  #gl-fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:997;
+    background:var(--navy);color:#fff;border:none;cursor:pointer;
+    padding:.55rem 1rem;border-radius:20px;font-size:.78rem;font-weight:600;
+    font-family:var(--mono);letter-spacing:.04em;
+    box-shadow:0 2px 12px rgba(10,22,40,.25);
+    display:flex;align-items:center;gap:.4rem;transition:background .15s,transform .15s}
+  #gl-fab:hover{background:#1a2e4a;transform:translateY(-1px)}
+  #gl-fab svg{width:14px;height:14px;flex-shrink:0}
+</style>
+<script>
+  (function(){
+    const fab = document.getElementById('gl-fab');
+    const drawer = document.getElementById('gl-drawer');
+    const overlay = document.getElementById('gl-overlay');
+    const close = document.getElementById('gl-close');
+    function open(){drawer.classList.add('open');overlay.classList.add('open');document.body.style.overflow='hidden';}
+    function shut(){drawer.classList.remove('open');overlay.classList.remove('open');document.body.style.overflow='';}
+    fab.addEventListener('click', open);
+    close.addEventListener('click', shut);
+    overlay.addEventListener('click', shut);
+    document.addEventListener('keydown', e => { if(e.key==='Escape') shut(); });
+  })();
+</script>
+
 </body>
 </html>

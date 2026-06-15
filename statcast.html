@@ -750,5 +750,73 @@ document.getElementById('searchComp').addEventListener('input',e=>{
 renderComp();
 </script>
 
+
+<!-- Glossary Drawer -->
+<div id="gl-overlay"></div>
+<aside id="gl-drawer" role="dialog" aria-label="Glossary" aria-modal="true">
+  <div id="gl-header">
+    <div><h2>Glossary</h2><span>Statcast Impact Analysis</span></div>
+    <button id="gl-close" aria-label="Close glossary">&#x2715;</button>
+  </div>
+  <div id="gl-body"><dl>
+      <div class="gl-item"><dt class="gl-term">Statcast</dt><dd class="gl-def">MLB's tracking system in all 30 ballparks since 2015. Uses radar and cameras to measure every batted ball, pitch, and player movement with high precision.</dd></div>
+      <div class="gl-item"><dt class="gl-term">xwOBA</dt><dd class="gl-def">Expected Weighted On-Base Average. Like wOBA but based on quality of contact (exit velocity + launch angle) rather than actual outcomes. Removes luck from results.</dd></div>
+      <div class="gl-item"><dt class="gl-term">wOBA</dt><dd class="gl-def">Weighted On-Base Average. Weights each outcome (walk, single, double, HR) by its actual run value. More accurate than OPS. League average ~.320.</dd></div>
+      <div class="gl-item"><dt class="gl-term">xBA</dt><dd class="gl-def">Expected Batting Average. Predicted batting average based on exit velocity and launch angle, ignoring defensive positioning and luck.</dd></div>
+      <div class="gl-item"><dt class="gl-term">xSLG</dt><dd class="gl-def">Expected Slugging Percentage. Predicted slugging based on quality of contact metrics, independent of where the ball actually landed.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Exit Velocity</dt><dd class="gl-def">Speed of the ball off the bat in mph. Higher exit velocity correlates strongly with offensive production. Elite hitters average 95+ mph.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Launch Angle</dt><dd class="gl-def">Vertical angle at which the ball leaves the bat. Optimal for extra-base hits: 10-30 degrees. Negative = ground ball, 45+ degrees = pop-up.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Hard Hit%</dt><dd class="gl-def">Percentage of batted balls with exit velocity of 95+ mph. A direct proxy for consistent quality of contact.</dd></div>
+      <div class="gl-item"><dt class="gl-term">BABIP</dt><dd class="gl-def">Batting Average on Balls In Play. Excludes home runs and strikeouts. League average ~.300. Extreme values often indicate luck rather than true skill.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Luck Gap</dt><dd class="gl-def">Actual wOBA minus expected xwOBA. A large positive gap suggests luck-driven performance; a large negative gap suggests bad luck with regression likely ahead.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Regression to the Mean</dt><dd class="gl-def">The statistical tendency for extreme performances to move back toward average over time. Players with large luck gaps tend to regress the following season.</dd></div>
+  </dl></div>
+</aside>
+<button id="gl-fab" aria-label="Open glossary">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="7" x2="8" y2="11.5"/><circle cx="8" cy="5" r=".6" fill="currentColor" stroke="none"/></svg>
+  Glossary
+</button>
+<style>
+  /* ── Glossary Drawer ─────────────────────────────── */
+  #gl-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:998;opacity:0;pointer-events:none;transition:opacity .25s}
+  #gl-overlay.open{opacity:1;pointer-events:all}
+  #gl-drawer{position:fixed;top:0;right:0;height:100%;width:min(400px,92vw);background:#fff;z-index:999;
+    box-shadow:-4px 0 24px rgba(0,0,0,.12);transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    display:flex;flex-direction:column;overflow:hidden}
+  #gl-drawer.open{transform:translateX(0)}
+  #gl-header{padding:1.1rem 1.25rem .9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  #gl-header h2{font-size:.95rem;font-weight:700;color:var(--navy);letter-spacing:.01em;margin:0}
+  #gl-header span{font-size:.72rem;color:var(--muted);font-family:var(--mono)}
+  #gl-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.2rem;padding:.25rem;line-height:1;border-radius:4px}
+  #gl-close:hover{color:var(--navy);background:var(--bg2)}
+  #gl-body{overflow-y:auto;padding:1rem 1.25rem 2rem;flex:1}
+  .gl-item{margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border)}
+  .gl-item:last-child{border-bottom:none}
+  .gl-term{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--blue);margin:0 0 .3rem}
+  .gl-def{font-size:.82rem;color:var(--text);line-height:1.55;margin:0}
+  #gl-fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:997;
+    background:var(--navy);color:#fff;border:none;cursor:pointer;
+    padding:.55rem 1rem;border-radius:20px;font-size:.78rem;font-weight:600;
+    font-family:var(--mono);letter-spacing:.04em;
+    box-shadow:0 2px 12px rgba(10,22,40,.25);
+    display:flex;align-items:center;gap:.4rem;transition:background .15s,transform .15s}
+  #gl-fab:hover{background:#1a2e4a;transform:translateY(-1px)}
+  #gl-fab svg{width:14px;height:14px;flex-shrink:0}
+</style>
+<script>
+  (function(){
+    const fab = document.getElementById('gl-fab');
+    const drawer = document.getElementById('gl-drawer');
+    const overlay = document.getElementById('gl-overlay');
+    const close = document.getElementById('gl-close');
+    function open(){drawer.classList.add('open');overlay.classList.add('open');document.body.style.overflow='hidden';}
+    function shut(){drawer.classList.remove('open');overlay.classList.remove('open');document.body.style.overflow='';}
+    fab.addEventListener('click', open);
+    close.addEventListener('click', shut);
+    overlay.addEventListener('click', shut);
+    document.addEventListener('keydown', e => { if(e.key==='Escape') shut(); });
+  })();
+</script>
+
 </body>
 </html>
