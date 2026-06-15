@@ -95,6 +95,35 @@
     .update-change{font-family:var(--mono);font-size:.75rem;color:var(--text);margin-bottom:.3rem}
     .update-change .arrow{color:var(--muted);margin:0 .2rem}
     .update-note{font-size:.78rem;color:var(--muted);line-height:1.4}
+    
+    .method-details{border:1px solid var(--border);border-radius:3px;background:var(--bg)}
+    .method-summary{display:flex;align-items:center;gap:.75rem;padding:1rem 1.25rem;cursor:pointer;list-style:none;user-select:none}
+    .method-summary::-webkit-details-marker{display:none}
+    .method-summary:hover{background:var(--bg2)}
+    .method-label{font-weight:700;font-size:.9rem;color:var(--navy)}
+    .method-hint{font-size:.78rem;color:var(--muted);flex:1}
+    .method-chevron{font-size:.7rem;color:var(--muted);transition:transform .2s}
+    details[open] .method-chevron{transform:rotate(180deg)}
+    .method-body{padding:1.25rem 1.25rem 1.5rem;border-top:1px solid var(--border)}
+    .method-intro{font-size:.85rem;color:var(--text);line-height:1.6;margin-bottom:1.25rem}
+    .method-h3{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:1.25rem 0 .6rem}
+    .method-formula{background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:.9rem 1rem;margin-bottom:1rem}
+    .method-formula code{font-family:var(--mono);font-size:.78rem;color:var(--navy);line-height:1.6}
+    .method-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.65rem;margin-bottom:1rem}
+    .method-comp{background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:.8rem .9rem}
+    .method-comp-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem}
+    .method-weight{background:var(--navy);color:#fff;font-family:var(--mono);font-size:.7rem;font-weight:700;padding:.15rem .4rem;border-radius:2px}
+    .method-comp-name{font-weight:700;font-size:.82rem;color:var(--navy)}
+    .method-comp-desc{font-size:.78rem;color:var(--muted);line-height:1.5;margin:0}
+    .method-example{background:var(--bg2);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:1rem}
+    .method-ex-row{display:grid;grid-template-columns:140px 1fr 1fr;align-items:center;padding:.5rem .9rem;border-bottom:1px solid var(--border);font-size:.78rem}
+    .method-ex-row:last-child{border-bottom:none}
+    .method-ex-row.highlight{background:#f0fdf4}
+    .method-ex-label{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+    .method-ex-val{font-weight:700;color:var(--navy)}
+    .method-ex-note{color:var(--muted);font-size:.72rem}
+    .method-caveat{font-size:.75rem;color:var(--muted);line-height:1.55;font-style:italic;margin:0}
+    @media(max-width:640px){.method-ex-row{grid-template-columns:120px 1fr}.method-ex-note{display:none}.method-grid{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
@@ -163,6 +192,87 @@
     </div>
     <p style="font-size:.82rem;color:var(--muted);font-style:italic">Note: Gunnar Henderson scores first at 0.851, combining elite WAR stability (6.77 avg over 3 seasons) with a pre-arb salary of $782K. The interesting targets start at rank 4 (Cal Raleigh, $1M for 7.2 WAR) and rank 6 (Jeremy Pena, $4.1M for 5.7 WAR), where low salary amplifies the signal significantly.
           <br><br><strong>Pre-Arb caveat:</strong> Players on pre-arbitration contracts (salary &lt;$800K) score artificially high on the market recognition and salary gap components. Their rank reflects genuine WAR stability, but the salary discount is structural, not a true market inefficiency. Focus on their consistency score and WAR floor rather than the overall composite.</p>
+  </div>
+</div>
+
+<!-- Methodology -->
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <details class="method-details">
+      <summary class="method-summary">
+        <span class="method-label">Model Methodology</span>
+        <span class="method-hint">How the Hidden Value Score is calculated</span>
+        <span class="method-chevron">&#9660;</span>
+      </summary>
+      <div class="method-body">
+
+        <p class="method-intro">The Hidden Value Score is a composite metric (0 to 1) that identifies batters who are both <strong>undervalued by the market</strong> and <strong>reliable producers</strong>. It combines six components, each normalized to a 0&ndash;1 range across all players in the dataset.</p>
+
+        <h3 class="method-h3">Formula</h3>
+        <div class="method-formula">
+          <code>Score = (Consistency &times; 0.30) + (WAR Floor &times; 0.20) + (Market Recognition &times; 0.20) + (Salary Gap &times; 0.15) + (WAR Trend &times; 0.10) + (Availability &times; 0.05)</code>
+        </div>
+
+        <h3 class="method-h3">Components</h3>
+        <div class="method-grid">
+          <div class="method-comp">
+            <div class="method-comp-header">
+              <span class="method-weight">30%</span>
+              <span class="method-comp-name">Consistency</span>
+            </div>
+            <p class="method-comp-desc">Avg WAR / (1 + Std Dev WAR). Rewards stable year-over-year production. A player averaging 5 WAR every year scores higher than one alternating between 2 and 8.</p>
+          </div>
+          <div class="method-comp">
+            <div class="method-comp-header">
+              <span class="method-weight">20%</span>
+              <span class="method-comp-name">WAR Floor</span>
+            </div>
+            <p class="method-comp-desc">Minimum single-season WAR across all analyzed seasons. Measures downside risk. A player who never had a bad season ranks higher than one with a volatile floor.</p>
+          </div>
+          <div class="method-comp">
+            <div class="method-comp-header">
+              <span class="method-weight">20%</span>
+              <span class="method-comp-name">Market Recognition</span>
+            </div>
+            <p class="method-comp-desc">Inverted log-salary relative to the dataset maximum. Low salary = high recognition score. Captures how much of a player&rsquo;s true value the market has yet to price in.</p>
+          </div>
+          <div class="method-comp">
+            <div class="method-comp-header">
+              <span class="method-weight">15%</span>
+              <span class="method-comp-name">Salary Gap</span>
+            </div>
+            <p class="method-comp-desc">(Avg WAR &times; $8M) &minus; Actual Salary, in $M. Directly measures the dollar gap between what a player is worth at market rate and what they are actually paid.</p>
+          </div>
+          <div class="method-comp">
+            <div class="method-comp-header">
+              <span class="method-weight">10%</span>
+              <span class="method-comp-name">WAR Trend</span>
+            </div>
+            <p class="method-comp-desc">Linear slope of WAR over time (least-squares). A positive slope means the player is improving season over season. Negative = declining trajectory.</p>
+          </div>
+          <div class="method-comp">
+            <div class="method-comp-header">
+              <span class="method-weight">5%</span>
+              <span class="method-comp-name">Availability</span>
+            </div>
+            <p class="method-comp-desc">Qualified seasons / expected seasons in the window. A player active for 4 out of 4 seasons scores 1.0. Injuries that caused missed seasons reduce this component.</p>
+          </div>
+        </div>
+
+        <h3 class="method-h3">Worked Example: Gunnar Henderson (score 0.851)</h3>
+        <div class="method-example">
+          <div class="method-ex-row"><span class="method-ex-label">Avg WAR</span><span class="method-ex-val">6.77</span><span class="method-ex-note">over 3 seasons (2023&ndash;2025)</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Std Dev WAR</span><span class="method-ex-val">1.47</span><span class="method-ex-note">some variance but elite average</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Consistency</span><span class="method-ex-val">6.77 / (1 + 1.47) = 2.74</span><span class="method-ex-note">normalized to ~0.92 in dataset</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">WAR Floor</span><span class="method-ex-val">5.4</span><span class="method-ex-note">his worst season is still elite</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">2025 Salary</span><span class="method-ex-val">$782K</span><span class="method-ex-note">pre-arb, near league minimum</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Salary Gap</span><span class="method-ex-val">$53.4M</span><span class="method-ex-note">(6.77 &times; $8M) &minus; $782K</span></div>
+          <div class="method-ex-row highlight"><span class="method-ex-label">Hidden Value Score</span><span class="method-ex-val">0.851</span><span class="method-ex-note">#1 in dataset</span></div>
+        </div>
+
+        <p class="method-caveat">All six components are min-max normalized independently before weighting, so a score of 0.851 means Henderson ranks in the 85th percentile of the composite across all 224 batters analyzed. Scores are not comparable across different dataset vintages.</p>
+      </div>
+    </details>
   </div>
 </div>
 

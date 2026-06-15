@@ -1,4 +1,43 @@
-<!DOCTYPE html>
+<!DOCTYPE htm
+
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <details class="method-details">
+      <summary class="method-summary">
+        <span class="method-label">Model Methodology</span>
+        <span class="method-hint">Market rate derivation, data pipeline, and 2026 projection method</span>
+        <span class="method-chevron">&#9660;</span>
+      </summary>
+      <div class="method-body">
+        <p class="method-intro">The surplus value framework converts WAR into dollars using an open-market rate, then compares that to actual salaries to identify mispriced contracts. Both the 2025 full-season dataset and a 2026 in-progress projection are available.</p>
+        <h3 class="method-h3">The Surplus Value Formula</h3>
+        <div class="method-formula"><code>Surplus Value ($M) = (WAR &times; $8M) &minus; Actual Salary</code></div>
+        <p class="method-intro" style="margin-top:.75rem">Positive = player is underpaid relative to their production. Negative = overpaid. The $8M/WAR rate is the estimated free-agent market price per win in 2025, derived from multi-year free-agent contract analysis.</p>
+        <h3 class="method-h3">Why $8M per WAR?</h3>
+        <div class="method-grid">
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">$M</span><span class="method-comp-name">Free-agent benchmarks</span></div><p class="method-comp-desc">Analysis of 2023&ndash;2025 free-agent signings shows the market has paid approximately $7.5M&ndash;$9M per projected WAR. $8M is the midpoint estimate.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">!</span><span class="method-comp-name">FA rate only</span></div><p class="method-comp-desc">Pre-arb and arbitration players are structurally underpaid versus this rate. Their surplus reflects CBA rules, not individual market mispricing.</p></div>
+        </div>
+        <h3 class="method-h3">Data Pipeline</h3>
+        <div class="method-example">
+          <div class="method-ex-row"><span class="method-ex-label">WAR (batters)</span><span class="method-ex-val">Baseball Reference</span><span class="method-ex-note">min 200 PA (2025), min 100 PA (2026)</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">WAR (pitchers)</span><span class="method-ex-val">Baseball Reference</span><span class="method-ex-note">min 50 IP (2025), min 20 IP (2026)</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Salaries</span><span class="method-ex-val">Spotrac</span><span class="method-ex-note">scraped via HTML source, 1,269+ players</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Deduplication</span><span class="method-ex-val">Highest WAR kept</span><span class="method-ex-note">for mid-season trades (2TM/3TM entries)</span></div>
+          <div class="method-ex-row highlight"><span class="method-ex-label">Total dataset</span><span class="method-ex-val">686 players (2025)</span><span class="method-ex-note">batters + pitchers combined</span></div>
+        </div>
+        <h3 class="method-h3">2026 Projection Method</h3>
+        <div class="method-grid">
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">&#x21C4;</span><span class="method-comp-name">WAR annualization</span></div><p class="method-comp-desc">2026 WAR captured mid-season (~70 games) and projected over 162 games: <code>WAR_proj = WAR &times; (162 / 70)</code>. Treat as directional signal, not final verdict.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">!</span><span class="method-comp-name">Early-season noise</span></div><p class="method-comp-desc">Small-sample WAR in April&ndash;June is noisier than full-season WAR. Extreme 2026 values should be interpreted cautiously until more games are played.</p></div>
+        </div>
+        <p class="method-caveat">This model applies a single $8M/WAR rate uniformly across all positions. In practice, catchers, shortstops, and center fielders command positional premiums beyond raw WAR. The framework intentionally ignores positional context to keep surplus value calculations clean and comparable across the roster.</p>
+      </div>
+    </details>
+  </div>
+</div>
+
+l>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -100,7 +139,35 @@
       .val-table th:nth-child(7),.val-table td:nth-child(7),
       .val-table th:nth-child(9),.val-table td:nth-child(9){display:none}
     }
-  </style>
+  .method-details{border:1px solid var(--border);border-radius:3px;background:var(--bg)}
+    .method-summary{display:flex;align-items:center;gap:.75rem;padding:1rem 1.25rem;cursor:pointer;list-style:none;user-select:none}
+    .method-summary::-webkit-details-marker{display:none}
+    .method-summary:hover{background:var(--bg2)}
+    .method-label{font-weight:700;font-size:.9rem;color:var(--navy)}
+    .method-hint{font-size:.78rem;color:var(--muted);flex:1}
+    .method-chevron{font-size:.7rem;color:var(--muted);transition:transform .2s}
+    details[open] .method-chevron{transform:rotate(180deg)}
+    .method-body{padding:1.25rem 1.25rem 1.5rem;border-top:1px solid var(--border)}
+    .method-intro{font-size:.85rem;color:var(--text);line-height:1.6;margin-bottom:1.25rem}
+    .method-h3{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:1.25rem 0 .6rem}
+    .method-formula{background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:.9rem 1rem;margin-bottom:1rem}
+    .method-formula code{font-family:var(--mono);font-size:.78rem;color:var(--navy);line-height:1.6}
+    .method-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.65rem;margin-bottom:1rem}
+    .method-comp{background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:.8rem .9rem}
+    .method-comp-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem}
+    .method-weight{background:var(--navy);color:#fff;font-family:var(--mono);font-size:.7rem;font-weight:700;padding:.15rem .4rem;border-radius:2px}
+    .method-comp-name{font-weight:700;font-size:.82rem;color:var(--navy)}
+    .method-comp-desc{font-size:.78rem;color:var(--muted);line-height:1.5;margin:0}
+    .method-example{background:var(--bg2);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:1rem}
+    .method-ex-row{display:grid;grid-template-columns:140px 1fr 1fr;align-items:center;padding:.5rem .9rem;border-bottom:1px solid var(--border);font-size:.78rem}
+    .method-ex-row:last-child{border-bottom:none}
+    .method-ex-row.highlight{background:#f0fdf4}
+    .method-ex-label{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+    .method-ex-val{font-weight:700;color:var(--navy)}
+    .method-ex-note{color:var(--muted);font-size:.72rem}
+    .method-caveat{font-size:.75rem;color:var(--muted);line-height:1.55;font-style:italic;margin:0}
+    @media(max-width:640px){.method-ex-row{grid-template-columns:120px 1fr}.method-ex-note{display:none}.method-grid{grid-template-columns:1fr}}
+    </style>
 </head>
 <body>
 
