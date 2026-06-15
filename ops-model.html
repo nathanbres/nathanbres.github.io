@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPS Prediction Model — Nathan Brès</title>
+  <title>OPS Prediction Model | Nathan Brès</title>
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
@@ -132,7 +132,7 @@
 <div class="section">
   <div class="container">
     <h2 class="section-title">How It Works</h2>
-    <p class="section-desc">The model learns from 4 seasons of MLB batting data (2022–2025). For each player, it looks at recent performance trends, age trajectory, and playing time to predict next-season OPS. Only players with 300+ plate appearances are included — below that threshold, stats become too noisy to be reliable.</p>
+    <p class="section-desc">The model learns from 4 seasons of MLB batting data (2022–2025). For each player, it looks at recent performance trends, age trajectory, and playing time to predict next-season OPS. Only players with 300+ plate appearances are included. Below that threshold, stats become too noisy to be reliable.</p>
     <div class="method-grid">
       <div class="method-card">
         <h4>What We're Predicting</h4>
@@ -201,7 +201,7 @@
 <div class="section">
   <div class="container">
     <h2 class="section-title">Is the Model Biased?</h2>
-    <p class="section-desc">This chart shows how the prediction errors are distributed. A good model should make roughly equal numbers of over- and under-predictions — the bars should be roughly symmetric around zero. A systematic lean to one side means the model is consistently over- or under-estimating performance.</p>
+    <p class="section-desc">This chart shows how the prediction errors are distributed. A good model should make roughly equal numbers of over- and under-predictions. The bars should be roughly symmetric around zero. A systematic lean to one side means the model is consistently over- or under-estimating performance.</p>
     <div class="chart-box">
       <div id="chart-errors" style="height:380px;"></div>
       <div class="chart-source">Source: Baseball Reference (baseball-reference.com) · Model: Linear Regression, scikit-learn · Nathan Brès, 2026</div>
@@ -219,7 +219,7 @@
       <div class="chart-source">Source: Baseball Reference (baseball-reference.com) · Model: Linear Regression, scikit-learn · Nathan Brès, 2026</div>
     </div>
 
-    <h3 style="font-size:1rem; font-weight:600; margin-bottom:0.5rem; color:var(--text);">Full Projections Table — vs. Actual 2026</h3>
+    <h3 style="font-size:1rem; font-weight:600; margin-bottom:0.5rem; color:var(--text);">Full Projections Table vs. Actual 2026</h3>
     <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1rem;">⬤ Actual 2026 OPS shown where available (150+ PA as of June 12, 2026). Season still in progress.</p>
     <div class="table-controls">
       <input class="search-input" id="searchInput" type="text" placeholder="Search player..." />
@@ -257,11 +257,11 @@
     <div class="limit-grid">
       <div class="limit-card">
         <h4>R² of 0.209</h4>
-        <p>The model explains ~21% of the variance in next-season OPS. That sounds low — and it is. But baseball performance is genuinely hard to predict. Professional models (ZiPS, Steamer) reach ~40–50% with far more data.</p>
+        <p>The model explains ~21% of the variance in next-season OPS. That sounds low, and it is. But baseball performance is genuinely hard to predict. Professional models (ZiPS, Steamer) reach ~40–50% with far more data.</p>
       </div>
       <div class="limit-card">
         <h4>Small Training Set</h4>
-        <p>Only 134 training samples — players need 3+ qualifying seasons to be included. More historical data (pre-2022) would significantly improve the model's stability.</p>
+        <p>Only 134 training samples. Players need 3+ qualifying seasons to be included. More historical data (pre-2022) would significantly improve the model's stability.</p>
       </div>
       <div class="limit-card">
         <h4>No Statcast Data</h4>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Statcast Impact Analysis — Nathan Brès</title>
+  <title>Statcast Impact Analysis | Nathan Brès</title>
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
@@ -210,34 +210,34 @@
     <p class="section-desc">All 251 qualified batters. Luck = wOBA − xwOBA. Positive = overperforming, Negative = underperforming. Combine age and luck filters to find the most actionable insights.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;margin-bottom:1.25rem">
       <div style="background:#eff6ff;border-left:3px solid #3b82f6;padding:.85rem 1rem;font-size:.82rem">
-        <strong style="color:#1d4ed8;display:block;margin-bottom:.25rem">🔵 ≤25 — Young</strong>
+        <strong style="color:#1d4ed8;display:block;margin-bottom:.25rem">🔵 ≤25 / Young</strong>
         <span style="color:#374151">Unlucky = breakout candidate. Lucky = possibly real skill emerging, worth monitoring closely.</span>
       </div>
       <div style="background:#f0fdf4;border-left:3px solid #16a34a;padding:.85rem 1rem;font-size:.82rem">
-        <strong style="color:#166534;display:block;margin-bottom:.25rem">🟢 26–30 — Prime</strong>
-        <span style="color:#374151">Most reliable signal. Luck gaps here are almost purely BABIP variance — regression is highly predictable.</span>
+        <strong style="color:#166534;display:block;margin-bottom:.25rem">🟢 26–30 / Prime</strong>
+        <span style="color:#374151">Most reliable signal. Luck gaps here are almost purely BABIP variance, and regression is highly predictable.</span>
       </div>
       <div style="background:#fefce8;border-left:3px solid #d97706;padding:.85rem 1rem;font-size:.82rem">
-        <strong style="color:#92400e;display:block;margin-bottom:.25rem">🟡 31–35 — Veteran</strong>
+        <strong style="color:#92400e;display:block;margin-bottom:.25rem">🟡 31–35 / Veteran</strong>
         <span style="color:#374151">Unlucky veterans may be declining, not just unlucky. Lucky veterans are at high regression risk.</span>
       </div>
       <div style="background:#fef2f2;border-left:3px solid #dc2626;padding:.85rem 1rem;font-size:.82rem">
-        <strong style="color:#991b1b;display:block;margin-bottom:.25rem">🔴 36+ — Aging</strong>
+        <strong style="color:#991b1b;display:block;margin-bottom:.25rem">🔴 36+ / Aging</strong>
         <span style="color:#374151">Treat with caution. Bad luck and physical decline are hard to separate at this stage.</span>
       </div>
     </div>
     <div class="filter-row">
       <input class="search-input" id="searchInput" type="text" placeholder="Search player…"/>
       <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
-      <button class="filter-btn unlucky" onclick="setFilter('Unlucky — Deserves Better',this)">✓ Unlucky</button>
-      <button class="filter-btn lucky" onclick="setFilter('Lucky — Regression Risk',this)">⚠ Lucky</button>
+      <button class="filter-btn unlucky" onclick="setFilter('Unlucky / Deserves Better',this)">✓ Unlucky</button>
+      <button class="filter-btn lucky" onclick="setFilter('Lucky / Regression Risk',this)">⚠ Lucky</button>
       <button class="filter-btn" onclick="setFilter('True to Expected',this)">~ True</button>
       <div class="filter-sep" style="width:1px;background:var(--border);align-self:stretch;margin:0 .2rem"></div>
       <button class="filter-btn" onclick="setAge('all',this)">All Ages</button>
-      <button class="filter-btn" onclick="setAge('≤25 — Young',this)">≤25</button>
-      <button class="filter-btn" onclick="setAge('26–30 — Prime',this)">26–30</button>
-      <button class="filter-btn" onclick="setAge('31–35 — Veteran',this)">31–35</button>
-      <button class="filter-btn" onclick="setAge('36+ — Aging',this)">36+</button>
+      <button class="filter-btn" onclick="setAge('≤25 / Young',this)">≤25</button>
+      <button class="filter-btn" onclick="setAge('26–30 / Prime',this)">26–30</button>
+      <button class="filter-btn" onclick="setAge('31–35 / Veteran',this)">31–35</button>
+      <button class="filter-btn" onclick="setAge('36+ / Aging',this)">36+</button>
     </div>
     <div style="overflow-x:auto">
       <table class="val-table">
@@ -369,8 +369,8 @@ const DATA = [{"Player": "Francisco Lindor", "pa": 732, "Age": 31, "age_group": 
 const isMobile = window.innerWidth < 640;
 const AGE_COLOR = {"\u226425 \u2014 Young": "#3b82f6", "26\u201330 \u2014 Prime": "#16a34a", "31\u201335 \u2014 Veteran": "#d97706", "36+ \u2014 Aging": "#dc2626", "Unknown": "#94a3b8"};
 const CAT_COLOR = {
-  'Unlucky — Deserves Better': '#16a34a',
-  'Lucky — Regression Risk': '#dc2626',
+  'Unlucky / Deserves Better': '#16a34a',
+  'Lucky / Regression Risk': '#dc2626',
   'True to Expected': '#94a3b8'
 };
 
@@ -382,7 +382,7 @@ const CAT_COLOR = {
     if(!groups[k]) groups[k] = {x:[],y:[],text:[],name:k,color:CAT_COLOR[k]};
     groups[k].x.push(d.avg_hit_speed);
     groups[k].y.push(d.woba_luck);
-    groups[k].text.push(`<b>${d.Player}</b> (${d.Age||'?'} yrs · ${d.age_group.split(' — ')[0]})<br>Exit Velo: ${d.avg_hit_speed} mph · Launch: ${d.avg_hit_angle}°<br>Barrel%: ${d.brl_percent}% · EV95%: ${d.ev95percent}%<br>wOBA: ${d.woba} → xwOBA: ${d.est_woba}<br>Luck: ${d.woba_luck > 0 ? '+' : ''}${d.woba_luck}`);
+    groups[k].text.push(`<b>${d.Player}</b> (${d.Age||'?'} yrs · ${d.age_group.split(' / ')[0]})<br>Exit Velo: ${d.avg_hit_speed} mph · Launch: ${d.avg_hit_angle}°<br>Barrel%: ${d.brl_percent}% · EV95%: ${d.ev95percent}%<br>wOBA: ${d.woba} → xwOBA: ${d.est_woba}<br>Luck: ${d.woba_luck > 0 ? '+' : ''}${d.woba_luck}`);
   });
 
   const traces = Object.values(groups).map(g => ({
@@ -509,13 +509,13 @@ function renderTable(){
     const luck=d.woba_luck;
     const luckStr=(luck>=0?'+':'')+luck;
     const luckCls=luck<-0.02?'neg-val':luck>0.02?'pos-val':'neutral-val';
-    const tagCls=d.category==='Unlucky — Deserves Better'?'tag-unlucky':d.category==='Lucky — Regression Risk'?'tag-lucky':'tag-true';
-    const tagText=d.category==='Unlucky — Deserves Better'?'Unlucky':d.category==='Lucky — Regression Risk'?'Lucky':'~True';
+    const tagCls=d.category==='Unlucky / Deserves Better'?'tag-unlucky':d.category==='Lucky / Regression Risk'?'tag-lucky':'tag-true';
+    const tagText=d.category==='Unlucky / Deserves Better'?'Unlucky':d.category==='Lucky / Regression Risk'?'Lucky':'~True';
     tbody.innerHTML+=`<tr>
       <td class="mono">${offset+i+1}</td>
       <td><strong>${d.Player}</strong></td>
       <td class="mono">${d.Age||'?'}</td>
-      <td><span class="tag" style="background:${{'≤25 — Young':'#dbeafe','26–30 — Prime':'#dcfce7','31–35 — Veteran':'#fef9c3','36+ — Aging':'#fee2e2','Unknown':'#f3f4f6'}[d.age_group]||'#f3f4f6'};color:#374151;font-size:.65rem">${d.age_group.split(' — ')[0]}</span></td>
+      <td><span class="tag" style="background:${{'≤25 / Young':'#dbeafe','26–30 / Prime':'#dcfce7','31–35 / Veteran':'#fef9c3','36+ / Aging':'#fee2e2','Unknown':'#f3f4f6'}[d.age_group]||'#f3f4f6'};color:#374151;font-size:.65rem">${d.age_group.split(' / ')[0]}</span></td>
       <td class="mono">${d.pa}</td>
       <td class="mono">${d.avg_hit_speed}</td>
       <td class="mono">${d.avg_hit_angle}°</td>
