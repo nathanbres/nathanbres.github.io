@@ -297,9 +297,9 @@ const TYPE_SHAPE = {'Batter':'circle','Pitcher':'diamond'};
     if(!groups[k]) groups[k]={x:[],y:[],text:[],size:[],name:`${d.player_type} · ${d.contract_status}`,color:STATUS_COLOR[d.contract_status],symbol:TYPE_SHAPE[d.player_type]};
     groups[k].x.push(d.Salary_2025);
     groups[k].y.push(d.WAR);
-    groups[k].size.push(Math.max(6,Math.min(16,d.volume/50)));
-    const metricStr = d.metric_label==='OPS'?`OPS: ${d.metric}`:`RA9: ${d.metric} · ${d.volume} IP`;
-    groups[k].text.push(`<b>${d.Player}</b> (${d.Team})<br>${d.player_type} · ${d.contract_status}<br>WAR: ${d.WAR} · ${metricStr}<br>Salary: $${(d.Salary_2025/1e6).toFixed(1)}M<br>Surplus: ${d.surplus_value_M>=0?'+':''}$${d.surplus_value_M}M`);
+    groups[k].size.push(Math.max(6,Math.min(16,Math.abs(d.WAR)*2)));
+    const metricStr = d.player_type==='Batter'?`WAR: ${d.WAR}`:`WAR: ${d.WAR}`;
+    groups[k].text.push(`<b>${d.Player}</b> (${d.Team})<br>${d.player_type} · ${d.contract_status}<br>WAR: ${d.WAR} · ${metricStr}<br>Salary: $${(d.Salary_2025/1e6).toFixed(1)}M<br>Surplus: ${d.Surplus_Value_M>=0?'+':''}$${d.Surplus_Value_M}M`);
   });
 
   const traces = [fairLine,...Object.values(groups).map(g=>({
@@ -325,10 +325,10 @@ const TYPE_SHAPE = {'Batter':'circle','Pitcher':'diamond'};
   const labels = top20.map(d=>`${d.Player} <span style="font-size:9px">${d.player_type==='Pitcher'?'⚾':'🏏'}</span>`);
   Plotly.newPlot('chart-top',[{
     y:top20.map(d=>d.Player),
-    x:top20.map(d=>d.surplus_value_M),
+    x:top20.map(d=>d.Surplus_Value_M),
     type:'bar',orientation:'h',
     marker:{color:colors,opacity:.88},
-    text:top20.map(d=>`+$${d.surplus_value_M}M · ${d.contract_status}`),
+    text:top20.map(d=>`+$${d.Surplus_Value_M}M · ${d.contract_status}`),
     textposition:isMobile?'inside':'outside',
     textfont:{size:9,color:isMobile?'#fff':'#1a1f2e'},
     hovertemplate:'<b>%{y}</b><br>Surplus: +$%{x}M<extra></extra>'
@@ -346,10 +346,10 @@ const TYPE_SHAPE = {'Batter':'circle','Pitcher':'diamond'};
   const bot15 = [...DATA].sort((a,b)=>a.surplus_value_M-b.surplus_value_M).slice(0,15);
   Plotly.newPlot('chart-bot',[{
     y:bot15.map(d=>d.Player),
-    x:bot15.map(d=>d.surplus_value_M),
+    x:bot15.map(d=>d.Surplus_Value_M),
     type:'bar',orientation:'h',
     marker:{color:bot15.map(d=>d.player_type==='Pitcher'?'#f43f5e':'#dc2626'),opacity:.85},
-    text:bot15.map(d=>`$${d.surplus_value_M}M · ${d.player_type}`),
+    text:bot15.map(d=>`$${d.Surplus_Value_M}M · ${d.player_type}`),
     textposition:isMobile?'inside':'outside',
     textfont:{size:9,color:isMobile?'#fff':'#1a1f2e'},
     hovertemplate:'<b>%{y}</b><br>Surplus: $%{x}M<extra></extra>'
@@ -409,12 +409,12 @@ function renderTable(){
   const tbody=document.getElementById('tableBody');
   tbody.innerHTML='';
   rows.forEach((d,i)=>{
-    const s=d.surplus_value_M;
+    const s=d.Surplus_Value_M;
     const sStr=(s>=0?'+':'')+`$${s}M`;
     const sc=s>=0?'pos-val':'neg-val';
     const statusCls={'Pre-Arb':'tag-pre','Arbitration':'tag-arb','Free Agent':'tag-fa'}[d.contract_status]||'';
     const typeCls=d.player_type==='Batter'?'tag-bat':'tag-pit';
-    const metricStr=d.metric_label==='OPS'?`${d.metric} OPS`:`${d.metric} RA9`;
+    const metricStr=d.player_type==='Batter'?`${d.WAR} WAR`:`${d.WAR} WAR`;
     tbody.innerHTML+=`<tr>
       <td><span class="${offset+i<3?'rank-badge top3':'rank-badge'}">${offset+i+1}</span></td>
       <td><strong>${d.Player}</strong></td>
@@ -423,7 +423,7 @@ function renderTable(){
       <td><span class="tag ${statusCls}">${d.contract_status}</span></td>
       <td class="mono">${d.WAR}</td>
       <td class="mono">$${(d.Salary_2025/1e6).toFixed(1)}M</td>
-      <td class="mono">$${d.dollar_per_WAR_M}M</td>
+      <td class="mono">${d.Salary_2025 && d.WAR ? "$"+(d.Salary_2025/1e6/d.WAR).toFixed(1)+"M" : "N/A"}</td>
       <td class="${sc}">${sStr}</td>
       <td><span class="tag ${d.value_label==='Undervalued'?'tag-under':'tag-over'}">${d.value_label}</span></td>
     </tr>`;
