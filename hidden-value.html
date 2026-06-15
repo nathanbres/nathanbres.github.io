@@ -50,6 +50,7 @@
     .finding-card p{font-size:.85rem;color:var(--text);line-height:1.6}
     .finding-card strong{font-weight:600}
     .chart-box{background:var(--bg);border:1px solid var(--border);padding:1.25rem;margin-bottom:.5rem}
+    @media(max-width:640px){#chart-stability,#chart-top20{height:420px!important}#chart-scatter{height:400px!important}.chart-box{padding:.75rem}}
     .chart-source{font-size:.72rem;color:var(--muted);font-family:var(--mono);text-align:right;padding-top:.5rem}
     .war-sparkline{display:flex;gap:3px;align-items:flex-end;height:28px}
     .war-bar{width:8px;border-radius:1px;min-height:2px}
@@ -312,17 +313,19 @@ const DATA = [{"Player": "Gunnar Henderson", "Team": "BAL", "Age": 24, "Seasons"
       color: eligible.map(d => d.Std_WAR < 0.7 ? '#16a34a' : d.Std_WAR < 1.2 ? '#2563eb' : '#d97706'),
       opacity: .85
     },
-    text: eligible.map(d => `${d.Std_WAR} · ${d.Avg_WAR} avg WAR`),
-    textposition: 'outside', textfont: {size:9},
-    hovertemplate: '<b>%{y}</b><br>Std Dev: %{x}<extra></extra>'
+    text: eligible.map(d => isMobile ? `${d.Std_WAR}` : `${d.Std_WAR} · ${d.Avg_WAR} avg WAR`),
+    textposition: isMobile ? 'inside' : 'outside',
+    textfont: {size: isMobile ? 8 : 9, color: isMobile ? '#fff' : '#1a1f2e'},
+    hovertemplate: '<b>%{y}</b><br>Std Dev: %{x}<br>Avg WAR: %{customdata}<extra></extra>',
+    customdata: eligible.map(d => d.Avg_WAR)
   }], {
-    xaxis: {title: 'WAR Standard Deviation (lower = more consistent)', tickfont:{size:10}, gridcolor:'#f1f5f9'},
-    yaxis: {tickfont:{size:9}, automargin:true},
+    xaxis: {title: isMobile ? 'Std Dev WAR' : 'WAR Standard Deviation (lower = more consistent)', tickfont:{size: isMobile ? 8 : 10}, gridcolor:'#f1f5f9'},
+    yaxis: {tickfont:{size: isMobile ? 8 : 9}, automargin:true},
     plot_bgcolor:'#fff', paper_bgcolor:'#fff',
-    margin: {t:20, r:100, b:50, l:160},
-    annotations: [{x:.5,y:1.04,xref:'paper',yref:'paper',
-      text:'Green: elite consistency (<0.7) · Blue: solid · Orange: some variance',
-      showarrow:false, font:{size:10,color:'#64748b'}, align:'center'}]
+    margin: isMobile ? {t:30, r:10, b:45, l:120} : {t:30, r:110, b:50, l:160},
+    annotations: [{x:.5, y:1.06, xref:'paper', yref:'paper',
+      text: isMobile ? 'Green <0.7 · Blue solid · Orange variance' : 'Green: elite consistency (<0.7) · Blue: solid · Orange: some variance',
+      showarrow:false, font:{size: isMobile ? 8 : 10, color:'#64748b'}, align:'center'}]
   }, {responsive:true, displayModeBar:false});
 })();
 
@@ -342,18 +345,20 @@ const DATA = [{"Player": "Gunnar Henderson", "Team": "BAL", "Age": 24, "Seasons"
     },
     text: top20.map(d => {
       const sal = d.Salary_2025 ? '$'+(d.Salary_2025/1e6).toFixed(1)+'M' : 'N/A';
-      return `${d.hidden_value_score} · ${sal}`;
+      return isMobile ? sal : `${d.hidden_value_score} · ${sal}`;
     }),
-    textposition: 'outside', textfont: {size:9},
-    hovertemplate: '<b>%{y}</b><br>Score: %{x}<extra></extra>'
+    textposition: isMobile ? 'inside' : 'outside',
+    textfont: {size: isMobile ? 8 : 9, color: isMobile ? '#fff' : '#1a1f2e'},
+    hovertemplate: '<b>%{y}</b><br>Score: %{x}<br>Salary: %{customdata}<extra></extra>',
+    customdata: top20.map(d => d.Salary_2025 ? '$'+(d.Salary_2025/1e6).toFixed(1)+'M' : 'N/A')
   }], {
-    xaxis: {title: 'Hidden Value Score', tickfont:{size:10}, gridcolor:'#f1f5f9', range:[0,0.85]},
-    yaxis: {tickfont:{size:9}, automargin:true},
+    xaxis: {title: 'Hidden Value Score', tickfont:{size: isMobile ? 8 : 10}, gridcolor:'#f1f5f9', range:[0, isMobile ? 1.0 : 0.95]},
+    yaxis: {tickfont:{size: isMobile ? 8 : 9}, automargin:true},
     plot_bgcolor:'#fff', paper_bgcolor:'#fff',
-    margin: {t:20, r:100, b:50, l:160},
-    annotations: [{x:.5,y:1.04,xref:'paper',yref:'paper',
-      text:'Green: salary <$5M · Blue: $5–15M · Orange: >$15M',
-      showarrow:false, font:{size:10,color:'#64748b'}, align:'center'}]
+    margin: isMobile ? {t:30, r:10, b:45, l:120} : {t:30, r:110, b:50, l:160},
+    annotations: [{x:.5, y:1.06, xref:'paper', yref:'paper',
+      text: isMobile ? 'Green <$5M · Blue $5-15M · Orange >$15M' : 'Green: salary <$5M · Blue: $5–15M · Orange: >$15M',
+      showarrow:false, font:{size: isMobile ? 8 : 10, color:'#64748b'}, align:'center'}]
   }, {responsive:true, displayModeBar:false});
 })();
 
