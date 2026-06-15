@@ -301,27 +301,32 @@ const DATA = [{"Player": "Gunnar Henderson", "Team": "BAL", "Age": 24, "Seasons"
 
 // ── Bar: WAR Stability Top 20 ─────────────────────────────
 (function(){
+  // Sort ascending by Std_WAR = most consistent first, take top 20, then reverse for chart display
   const eligible = DATA.filter(d => d.Seasons >= 3 && d.Avg_WAR >= 3)
-    .sort((a,b) => a.Std_WAR - b.Std_WAR).slice(0,20).reverse();
+    .sort((a,b) => a.Std_WAR - b.Std_WAR).slice(0,20);
+
+  // Use consistency score = Avg_WAR / (1 + Std_WAR) so bigger bar = better
+  const scores = eligible.map(d => +(d.Avg_WAR / (1 + d.Std_WAR)).toFixed(2));
 
   Plotly.newPlot('chart-stability', [{
     y: eligible.map(d => d.Player),
-    x: eligible.map(d => d.Std_WAR),
+    x: scores,
     type: 'bar', orientation: 'h',
     marker: {
       color: eligible.map(d => d.Std_WAR < 0.7 ? '#16a34a' : d.Std_WAR < 1.2 ? '#2563eb' : '#d97706'),
       opacity: .85
     },
-    text: eligible.map(d => `${d.Std_WAR} · ${d.Avg_WAR} avg WAR`),
+    text: eligible.map(d => `${d.Std_WAR} std · ${d.Avg_WAR} avg WAR`),
     textposition: 'outside', textfont: {size:9},
-    hovertemplate: '<b>%{y}</b><br>Std Dev: %{x}<extra></extra>'
+    hovertemplate: '<b>%{y}</b><br>Consistency Score: %{x}<br>Std Dev: %{customdata} WAR<extra></extra>',
+    customdata: eligible.map(d => d.Std_WAR)
   }], {
-    xaxis: {title: 'WAR Standard Deviation (lower = more consistent)', tickfont:{size:10}, gridcolor:'#f1f5f9'},
+    xaxis: {title: 'Consistency Score (higher = more consistent)', tickfont:{size:10}, gridcolor:'#f1f5f9'},
     yaxis: {tickfont:{size:9}, automargin:true},
     plot_bgcolor:'#fff', paper_bgcolor:'#fff',
-    margin: {t:20, r:100, b:50, l:160},
+    margin: {t:20, r:140, b:50, l:160},
     annotations: [{x:.5,y:1.04,xref:'paper',yref:'paper',
-      text:'Green: elite consistency (<0.7) · Blue: solid · Orange: some variance',
+      text:'Green: elite consistency (std <0.7) · Blue: solid · Orange: some variance',
       showarrow:false, font:{size:10,color:'#64748b'}, align:'center'}]
   }, {responsive:true, displayModeBar:false});
 })();
