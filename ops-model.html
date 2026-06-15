@@ -353,6 +353,18 @@
   </div>
 </div>
 
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <div class="takeaway">
+      <div class="takeaway-label">So What?</div>
+      <div class="takeaway-title">What This Model Gets Right, and Where It Falls Short</div>
+      <p>On 18 players with 2026 actuals available, the model achieves a <strong>mean absolute error of 0.066 OPS points</strong>. The model called <strong>Ohtani (+0.011), Soto (+0.008), and Zach Neto (0.000 error)</strong> almost exactly right, which validates the approach for established performers near their true-talent level. These are players whose profile is stable enough that recent history is a reliable guide.</p>
+      <p>The clearest failures involve situational change. <strong>Aaron Judge (-0.114) and Gunnar Henderson (-0.124)</strong> were both significantly overestimated, and <strong>Manny Machado (-0.185)</strong> is the largest miss of the validation set. The model cannot account for pitch mix adjustments, lineup context shifts, or aging-curve inflection points. These blind spots are structural, not fixable with more training data alone.</p>
+      <p>The practical takeaway: use this model as a <strong>sanity check on consensus projections</strong>, not as a standalone signal. It performs best on 26-to-32-year-old players with 3+ seasons of consistent playing time. For players outside that window, weight it accordingly and supplement with Statcast contact quality metrics.</p>
+    </div>
+  </div>
+</div>
+
 <div class="page-footer">
   Nathan Brès · MLB OPS Prediction Model · Data: Baseball Reference · nathanbres.github.io
 </div>
@@ -508,17 +520,7 @@ renderTable(projections2026);
 </script>
 
 
-<div class="section" style="padding-top:0">
-  <div class="container">
-    <div class="takeaway">
-      <div class="takeaway-label">So What?</div>
-      <div class="takeaway-title">What This Model Gets Right, and Where It Falls Short</div>
-      <p>On 18 players with 2026 actuals available, the model achieves a <strong>mean absolute error of 0.066 OPS points</strong>. The model called <strong>Ohtani (+0.011), Soto (+0.008), and Zach Neto (0.000 error)</strong> almost exactly right, which validates the approach for established performers near their true-talent level. These are players whose profile is stable enough that recent history is a reliable guide.</p>
-      <p>The clearest failures involve situational change. <strong>Aaron Judge (-0.114) and Gunnar Henderson (-0.124)</strong> were both significantly overestimated, and <strong>Manny Machado (-0.185)</strong> is the largest miss of the validation set. The model cannot account for pitch mix adjustments, lineup context shifts, or aging-curve inflection points. These blind spots are structural, not fixable with more training data alone.</p>
-      <p>The practical takeaway: use this model as a <strong>sanity check on consensus projections</strong>, not as a standalone signal. It performs best on 26-to-32-year-old players with 3+ seasons of consistent playing time. For players outside that window, weight it accordingly and supplement with Statcast contact quality metrics.</p>
-    </div>
-  </div>
-</div>
+
 
 <!-- Glossary Drawer -->
 <div id="gl-overlay"></div>
