@@ -128,6 +128,13 @@
     .method-ex-note{color:var(--muted);font-size:.72rem}
     .method-caveat{font-size:.75rem;color:var(--muted);line-height:1.55;font-style:italic;margin:0}
     @media(max-width:640px){.method-ex-row{grid-template-columns:120px 1fr}.method-ex-note{display:none}.method-grid{grid-template-columns:1fr}}
+    
+    .takeaway{background:var(--bg2);border:1px solid var(--border);border-left:4px solid var(--navy);border-radius:2px;padding:1.5rem 1.75rem;margin-top:0}
+    .takeaway-label{font-family:var(--mono);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);margin-bottom:.6rem}
+    .takeaway-title{font-size:1.05rem;font-weight:700;color:var(--navy);margin-bottom:.75rem}
+    .takeaway p{font-size:.88rem;color:var(--text);line-height:1.7;margin:0 0 .6rem}
+    .takeaway p:last-child{margin:0}
+    .takeaway strong{color:var(--navy)}
     </style>
 </head>
 <body>
@@ -500,6 +507,18 @@ document.getElementById('searchInput').addEventListener('input', e => {
 renderTable(projections2026);
 </script>
 
+
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <div class="takeaway">
+      <div class="takeaway-label">So What?</div>
+      <div class="takeaway-title">What This Model Gets Right, and Where It Falls Short</div>
+      <p>On 18 players with 2026 actuals available, the model achieves a <strong>mean absolute error of 0.066 OPS points</strong>. The model called <strong>Ohtani (+0.011), Soto (+0.008), and Zach Neto (0.000 error)</strong> almost exactly right, which validates the approach for established performers near their true-talent level. These are players whose profile is stable enough that recent history is a reliable guide.</p>
+      <p>The clearest failures involve situational change. <strong>Aaron Judge (-0.114) and Gunnar Henderson (-0.124)</strong> were both significantly overestimated, and <strong>Manny Machado (-0.185)</strong> is the largest miss of the validation set. The model cannot account for pitch mix adjustments, lineup context shifts, or aging-curve inflection points. These blind spots are structural, not fixable with more training data alone.</p>
+      <p>The practical takeaway: use this model as a <strong>sanity check on consensus projections</strong>, not as a standalone signal. It performs best on 26-to-32-year-old players with 3+ seasons of consistent playing time. For players outside that window, weight it accordingly and supplement with Statcast contact quality metrics.</p>
+    </div>
+  </div>
+</div>
 
 <!-- Glossary Drawer -->
 <div id="gl-overlay"></div>

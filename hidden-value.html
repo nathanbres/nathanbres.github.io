@@ -124,6 +124,13 @@
     .method-ex-note{color:var(--muted);font-size:.72rem}
     .method-caveat{font-size:.75rem;color:var(--muted);line-height:1.55;font-style:italic;margin:0}
     @media(max-width:640px){.method-ex-row{grid-template-columns:120px 1fr}.method-ex-note{display:none}.method-grid{grid-template-columns:1fr}}
+    
+    .takeaway{background:var(--bg2);border:1px solid var(--border);border-left:4px solid var(--navy);border-radius:2px;padding:1.5rem 1.75rem;margin-top:0}
+    .takeaway-label{font-family:var(--mono);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);margin-bottom:.6rem}
+    .takeaway-title{font-size:1.05rem;font-weight:700;color:var(--navy);margin-bottom:.75rem}
+    .takeaway p{font-size:.88rem;color:var(--text);line-height:1.7;margin:0 0 .6rem}
+    .takeaway p:last-child{margin:0}
+    .takeaway strong{color:var(--navy)}
     </style>
 </head>
 <body>
@@ -641,6 +648,18 @@ document.getElementById('searchInput').addEventListener('input', e => {
 
 renderTable();
 </script>
+
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <div class="takeaway">
+      <div class="takeaway-label">So What?</div>
+      <div class="takeaway-title">The Model Identified Real Value Before the Market Did</div>
+      <p>The strongest validation of this model is contractual, not statistical. <strong>Gunnar Henderson, identified as the top hidden value player at $782K, signed a new deal worth $8.5M in 2026.</strong> Cal Raleigh went from $1M to $11M. Zach Neto and Brice Turang each received their first significant arbitration raises. In each case, the model flagged the undervaluation before the market corrected it.</p>
+      <p>Beyond the pre-arb cases, the treatment of <strong>Aaron Judge at rank 3 (score 0.713)</strong> is the most analytically interesting result. At $40M per year, Judge is the highest-paid player in the dataset, yet his 9.0 avg WAR over 4 seasons with a floor of 7.5 WAR makes him genuinely undervalued even at that salary. The model correctly identifies that consistency at elite production levels is worth more than the market typically prices in on long-term deals. This is a real signal, not a pre-arb artifact.</p>
+      <p>The honest caveat remains: the salary gap component inflates scores for pre-arb players in ways that reflect CBA structure rather than market inefficiency. The most operationally useful output is the <strong>Consistency Score applied to players in their first two arbitration years</strong>, where the gap between market salary and true value is largest and most actionable for a front office building competitively on a budget.</p>
+    </div>
+  </div>
+</div>
 
 <!-- Glossary Drawer -->
 <div id="gl-overlay"></div>
