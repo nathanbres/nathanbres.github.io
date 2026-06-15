@@ -264,7 +264,7 @@
             <th onclick="sortTable('WAR')">WAR ↕</th>
             <th onclick="sortTable('Salary_2025')">Salary ↕</th>
             <th onclick="sortTable('dollar_per_WAR_M')">$/WAR ↕</th>
-            <th onclick="sortTable('surplus_value_M')">Surplus ↕</th>
+            <th onclick="sortTable('Surplus_Value_M')">Surplus ↕</th>
             <th>Value</th>
           </tr>
         </thead>
@@ -320,7 +320,7 @@ const TYPE_SHAPE = {'Batter':'circle','Pitcher':'diamond'};
 
 // ── Top 20 ───────────────────────────────────────────────
 (function(){
-  const top20 = [...DATA].sort((a,b)=>b.surplus_value_M-a.surplus_value_M).slice(0,20).reverse();
+  const top20 = [...DATA].filter(d=>d.Surplus_Value_M!=null).sort((a,b)=>b.Surplus_Value_M-a.Surplus_Value_M).slice(0,20).reverse();
   const colors = top20.map(d=>STATUS_COLOR[d.contract_status]);
   const labels = top20.map(d=>`${d.Player} <span style="font-size:9px">${d.player_type==='Pitcher'?'⚾':'🏏'}</span>`);
   Plotly.newPlot('chart-top',[{
@@ -328,7 +328,7 @@ const TYPE_SHAPE = {'Batter':'circle','Pitcher':'diamond'};
     x:top20.map(d=>d.Surplus_Value_M),
     type:'bar',orientation:'h',
     marker:{color:colors,opacity:.88},
-    text:top20.map(d=>`+$${d.Surplus_Value_M}M · ${d.contract_status}`),
+    text:top20.map(d=>d.Surplus_Value_M!=null?`+$${d.Surplus_Value_M}M · ${d.contract_status}`:`N/A · ${d.contract_status}`),
     textposition:isMobile?'inside':'outside',
     textfont:{size:9,color:isMobile?'#fff':'#1a1f2e'},
     hovertemplate:'<b>%{y}</b><br>Surplus: +$%{x}M<extra></extra>'
@@ -343,13 +343,13 @@ const TYPE_SHAPE = {'Batter':'circle','Pitcher':'diamond'};
 
 // ── Bottom 15 ────────────────────────────────────────────
 (function(){
-  const bot15 = [...DATA].sort((a,b)=>a.surplus_value_M-b.surplus_value_M).slice(0,15);
+  const bot15 = [...DATA].filter(d=>d.Surplus_Value_M!=null).sort((a,b)=>a.Surplus_Value_M-b.Surplus_Value_M).slice(0,15);
   Plotly.newPlot('chart-bot',[{
     y:bot15.map(d=>d.Player),
     x:bot15.map(d=>d.Surplus_Value_M),
     type:'bar',orientation:'h',
     marker:{color:bot15.map(d=>d.player_type==='Pitcher'?'#f43f5e':'#dc2626'),opacity:.85},
-    text:bot15.map(d=>`$${d.Surplus_Value_M}M · ${d.player_type}`),
+    text:bot15.map(d=>d.Surplus_Value_M!=null?`$${d.Surplus_Value_M}M · ${d.player_type}`:`N/A · ${d.player_type}`),
     textposition:isMobile?'inside':'outside',
     textfont:{size:9,color:isMobile?'#fff':'#1a1f2e'},
     hovertemplate:'<b>%{y}</b><br>Surplus: $%{x}M<extra></extra>'
@@ -362,7 +362,7 @@ const TYPE_SHAPE = {'Batter':'circle','Pitcher':'diamond'};
 })();
 
 // ── Table ─────────────────────────────────────────────────
-let sortKey='surplus_value_M', sortAsc=false;
+let sortKey='Surplus_Value_M', sortAsc=false;
 const filters={type:'all',status:'all',value:'all'};
 let tablePage=1; const PAGE_SIZE=50;
 
