@@ -296,7 +296,16 @@ let DATA = DATA_2025;
 const isMobile = window.innerWidth < 640;
 
 function switchYear(year) {
-  DATA = year === 2026 ? DATA_2026 : DATA_2025;
+  if (year === 2026) {
+    // Normalize 2026 data to use same field names as 2025
+    DATA = DATA_2026.map(d => ({
+      ...d,
+      Salary_2025: d.Salary_2026,
+      WAR: d.WAR_proj !== undefined ? d.WAR_proj : d.WAR
+    }));
+  } else {
+    DATA = DATA_2025;
+  }
   document.getElementById('btn-2025').classList.toggle('active', year === 2025);
   document.getElementById('btn-2026').classList.toggle('active', year === 2026);
   document.getElementById('year-note-2026').style.display = year === 2026 ? 'block' : 'none';
