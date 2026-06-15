@@ -87,7 +87,15 @@
       .val-table th:nth-child(6),.val-table td:nth-child(6),
       .val-table th:nth-child(7),.val-table td:nth-child(7){display:none}
     }
-  </style>
+  
+    .update-card{background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:2px;padding:.9rem 1rem}
+    .update-card.update-up{border-left-color:#16a34a}
+    .update-card.update-down{border-left-color:#2563eb}
+    .update-name{font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:.25rem}
+    .update-change{font-family:var(--mono);font-size:.75rem;color:var(--text);margin-bottom:.3rem}
+    .update-change .arrow{color:var(--muted);margin:0 .2rem}
+    .update-note{font-size:.78rem;color:var(--muted);line-height:1.4}
+    </style>
 </head>
 <body>
 
@@ -112,7 +120,7 @@
     <div class="stat-div"></div>
     <div class="stat-item"><span class="stat-value">6</span><span class="stat-label">Score Components</span></div>
     <div class="stat-div"></div>
-    <div class="stat-item"><span class="stat-value">0.48</span><span class="stat-label">Lowest WAR Std Dev (Tucker)</span></div>
+    <div class="stat-item"><span class="stat-value">0.22</span><span class="stat-label">Lowest WAR Std Dev (Y. Diaz)</span></div>
   </div>
 </div>
 
@@ -153,7 +161,8 @@
         <p>Ratio of qualified seasons to expected seasons. A player who is consistently on the field is more reliable than one with repeated injury absences.</p>
       </div>
     </div>
-    <p style="font-size:.82rem;color:var(--muted);font-style:italic">Note: Gunnar Henderson scores first at 0.851, combining elite WAR stability (6.77 avg over 3 seasons) with a pre-arb salary of $782K. The interesting targets start at rank 4 (Cal Raleigh, $1M for 7.2 WAR) and rank 6 (Jeremy Pena, $4.1M for 5.7 WAR), where low salary amplifies the signal significantly.</p>
+    <p style="font-size:.82rem;color:var(--muted);font-style:italic">Note: Gunnar Henderson scores first at 0.851, combining elite WAR stability (6.77 avg over 3 seasons) with a pre-arb salary of $782K. The interesting targets start at rank 4 (Cal Raleigh, $1M for 7.2 WAR) and rank 6 (Jeremy Pena, $4.1M for 5.7 WAR), where low salary amplifies the signal significantly.
+          <br><br><strong>Pre-Arb caveat:</strong> Players on pre-arbitration contracts (salary &lt;$800K) score artificially high on the market recognition and salary gap components. Their rank reflects genuine WAR stability, but the salary discount is structural, not a true market inefficiency. Focus on their consistency score and WAR floor rather than the overall composite.</p>
   </div>
 </div>
 
@@ -164,8 +173,8 @@
     <p class="section-desc">Four types of hidden value emerge from the data.</p>
     <div class="finding-grid">
       <div class="finding-card green">
-        <h4>The Most Consistent Hitter in Baseball</h4>
-        <p><strong>Kyle Tucker</strong> (CHC, $16.5M) has a WAR standard deviation of just <strong>0.48</strong> across 4 seasons, the lowest in the dataset among players with 4+ WAR average. 5.5, 5.5, 4.6, 4.5. You know exactly what you're getting. <strong>Will Smith</strong> (LAD, 0.43 std) is even more consistent but at a lower output level.</p>
+        <h4>The Most Consistent Hitters in Baseball</h4>
+        <p><strong>Yainer Diaz</strong> (HOU) leads the full dataset with a WAR standard deviation of just <strong>0.22</strong> across 3 seasons. Among players with 5+ avg WAR, <strong>Kyle Tucker</strong> (CHC) stands out at <strong>0.48</strong> std dev over 4 seasons: 5.5, 5.5, 4.6, 4.5. You know exactly what you're getting. <strong>Will Smith</strong> (LAD, 0.43 std) is even more consistent but at a lower output level.</p>
       </div>
       <div class="finding-card amber">
         <h4>Biggest Salary Gap: Jarren Duran</h4>
@@ -196,6 +205,58 @@
 </div>
 
 <!-- WAR Stability: Top 20 -->
+
+<!-- 2026 Contract Status Update -->
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <h2 class="section-title">2026 Contract Status Update</h2>
+    <p class="section-desc">Several top-ranked players from the 2025 model have since signed new contracts, changed arbitration class, or reached free agency. Their salary gap has narrowed, but their WAR stability profile remains unchanged.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem;margin-top:1rem">
+      <div class="update-card update-up">
+        <div class="update-name">Gunnar Henderson</div>
+        <div class="update-change">$782K Pre-Arb <span class="arrow">&#8594;</span> $8.5M FA</div>
+        <div class="update-note">Score was inflated by pre-arb salary. Still the most stable elite producer.</div>
+      </div>
+      <div class="update-card update-up">
+        <div class="update-name">Cal Raleigh</div>
+        <div class="update-change">$1M Arb <span class="arrow">&#8594;</span> $11M FA</div>
+        <div class="update-note">Market caught up. Surplus value drops from +$56.6M to ~+$46.6M.</div>
+      </div>
+      <div class="update-card update-up">
+        <div class="update-name">Zach Neto</div>
+        <div class="update-change">$780K Pre-Arb <span class="arrow">&#8594;</span> $4.15M Arb</div>
+        <div class="update-note">First arb raise. Still significantly underpaid at 5.3 avg WAR.</div>
+      </div>
+      <div class="update-card update-up">
+        <div class="update-name">Brice Turang</div>
+        <div class="update-change">$777K Pre-Arb <span class="arrow">&#8594;</span> $4.15M Arb</div>
+        <div class="update-note">First arb raise. Consistent 3.93 avg WAR over 3 seasons.</div>
+      </div>
+      <div class="update-card update-up">
+        <div class="update-name">Corbin Carroll</div>
+        <div class="update-change">$5M Arb <span class="arrow">&#8594;</span> $10M FA</div>
+        <div class="update-note">Reached free agency. Model correctly identified the underpayment early.</div>
+      </div>
+      <div class="update-card update-up">
+        <div class="update-name">Jarren Duran</div>
+        <div class="update-change">$3.75M Arb <span class="arrow">&#8594;</span> $7.7M FA</div>
+        <div class="update-note">Salary doubled. High std dev (2.80) was always the risk flag.</div>
+      </div>
+      <div class="update-card update-up">
+        <div class="update-name">Ernie Clement</div>
+        <div class="update-change">$1.97M Arb <span class="arrow">&#8594;</span> $4.6M Arb</div>
+        <div class="update-note">Another raise. Low salary gap but exceptional consistency remains.</div>
+      </div>
+      <div class="update-card update-down">
+        <div class="update-name">Kyle Tucker</div>
+        <div class="update-change">$16.5M FA <span class="arrow">&#8594;</span> $1M Arb</div>
+        <div class="update-note">Restructured deal. Now one of the most underpaid players in baseball on this model.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WAR Stability Chart -->
 <div class="section">
   <div class="container">
     <h2 class="section-title">WAR Stability: Top 20 Most Consistent</h2>
