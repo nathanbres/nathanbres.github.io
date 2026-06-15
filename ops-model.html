@@ -1,44 +1,4 @@
-<!DOCTYPE htm
-
-<div class="section" style="padding-top:0">
-  <div class="container">
-    <details class="method-details">
-      <summary class="method-summary">
-        <span class="method-label">Model Methodology</span>
-        <span class="method-hint">Variables, coefficients, and technical limitations</span>
-        <span class="method-chevron">&#9660;</span>
-      </summary>
-      <div class="method-body">
-        <p class="method-intro">The model is a <strong>multivariate linear regression</strong> trained on 4 seasons of MLB batting data (2022&ndash;2025). It predicts next-season OPS from 5 input features derived from a player&rsquo;s recent history.</p>
-        <h3 class="method-h3">Input Features</h3>
-        <div class="method-grid">
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">X1</span><span class="method-comp-name">OPS (previous season)</span></div><p class="method-comp-desc">Raw OPS from the season immediately before the prediction year. Strongest single predictor due to year-to-year autocorrelation (~0.60).</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">X2</span><span class="method-comp-name">2-season rolling avg OPS</span></div><p class="method-comp-desc">Average OPS over the two most recent seasons. Smooths outlier years and captures underlying true-talent level better than a single season.</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">X3</span><span class="method-comp-name">Plate Appearances</span></div><p class="method-comp-desc">Total PA in the previous season. Controls for playing time: a 650-PA season carries more signal than a 300-PA season. Also proxies for injury history.</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">X4</span><span class="method-comp-name">Age</span></div><p class="method-comp-desc">Player age entering the prediction season. Captures aging curves: production typically peaks at 27&ndash;29 and declines thereafter.</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">X5</span><span class="method-comp-name">WAR (previous season)</span></div><p class="method-comp-desc">Baseball Reference WAR. Adds defensive and baserunning context that OPS alone misses, distinguishing all-around contributors from pure hitters.</p></div>
-        </div>
-        <h3 class="method-h3">Model Performance</h3>
-        <div class="method-example">
-          <div class="method-ex-row"><span class="method-ex-label">RMSE</span><span class="method-ex-val">0.0734</span><span class="method-ex-note">avg prediction error in OPS points</span></div>
-          <div class="method-ex-row"><span class="method-ex-label">R&sup2;</span><span class="method-ex-val">0.209</span><span class="method-ex-note">21% of next-season OPS variance explained</span></div>
-          <div class="method-ex-row"><span class="method-ex-label">Training data</span><span class="method-ex-val">134 players</span><span class="method-ex-note">2022&ndash;2024 seasons, 300+ PA filter</span></div>
-          <div class="method-ex-row highlight"><span class="method-ex-label">Validation</span><span class="method-ex-val">2025 actuals</span><span class="method-ex-note">held-out year for out-of-sample testing</span></div>
-        </div>
-        <h3 class="method-h3">Known Limitations</h3>
-        <div class="method-grid">
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">No Statcast inputs</span></div><p class="method-comp-desc">Exit velocity, launch angle, and xwOBA are not included. These are stronger predictors but reduce sample size significantly (Statcast available from 2015 only).</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">Injury blind</span></div><p class="method-comp-desc">The model cannot predict injuries. PA from the prior year is a weak proxy for health. A player projected at 0.900 OPS who gets injured will obviously underperform.</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">Small training set</span></div><p class="method-comp-desc">134 training observations is modest. R&sup2; of 0.21 means 79% of variance is unexplained, which is honest but limiting. A larger dataset would improve stability.</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">Mean regression bias</span></div><p class="method-comp-desc">Like all regression models, it systematically underestimates elite performers and overestimates below-average ones. Interpret extreme projections with caution.</p></div>
-        </div>
-        <p class="method-caveat">The model is intentionally simple and transparent. It is designed to demonstrate an analytical approach, not to compete with proprietary systems used by MLB front offices.</p>
-      </div>
-    </details>
-  </div>
-</div>
-
-l>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -221,6 +181,45 @@ l>
     </div>
   </div>
 </div>
+
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <details class="method-details">
+      <summary class="method-summary">
+        <span class="method-label">Model Methodology</span>
+        <span class="method-hint">Variables, coefficients, and technical limitations</span>
+        <span class="method-chevron">&#9660;</span>
+      </summary>
+      <div class="method-body">
+        <p class="method-intro">The model is a <strong>multivariate linear regression</strong> trained on 4 seasons of MLB batting data (2022&ndash;2025). It predicts next-season OPS from 5 input features derived from a player&rsquo;s recent history.</p>
+        <h3 class="method-h3">Input Features</h3>
+        <div class="method-grid">
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">X1</span><span class="method-comp-name">OPS (previous season)</span></div><p class="method-comp-desc">Raw OPS from the season immediately before the prediction year. Strongest single predictor due to year-to-year autocorrelation (~0.60).</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">X2</span><span class="method-comp-name">2-season rolling avg OPS</span></div><p class="method-comp-desc">Average OPS over the two most recent seasons. Smooths outlier years and captures underlying true-talent level better than a single season.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">X3</span><span class="method-comp-name">Plate Appearances</span></div><p class="method-comp-desc">Total PA in the previous season. Controls for playing time: a 650-PA season carries more signal than a 300-PA season. Also proxies for injury history.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">X4</span><span class="method-comp-name">Age</span></div><p class="method-comp-desc">Player age entering the prediction season. Captures aging curves: production typically peaks at 27&ndash;29 and declines thereafter.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">X5</span><span class="method-comp-name">WAR (previous season)</span></div><p class="method-comp-desc">Baseball Reference WAR. Adds defensive and baserunning context that OPS alone misses, distinguishing all-around contributors from pure hitters.</p></div>
+        </div>
+        <h3 class="method-h3">Model Performance</h3>
+        <div class="method-example">
+          <div class="method-ex-row"><span class="method-ex-label">RMSE</span><span class="method-ex-val">0.0734</span><span class="method-ex-note">avg prediction error in OPS points</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">R&sup2;</span><span class="method-ex-val">0.209</span><span class="method-ex-note">21% of next-season OPS variance explained</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Training data</span><span class="method-ex-val">134 players</span><span class="method-ex-note">2022&ndash;2024 seasons, 300+ PA filter</span></div>
+          <div class="method-ex-row highlight"><span class="method-ex-label">Validation</span><span class="method-ex-val">2025 actuals</span><span class="method-ex-note">held-out year for out-of-sample testing</span></div>
+        </div>
+        <h3 class="method-h3">Known Limitations</h3>
+        <div class="method-grid">
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">No Statcast inputs</span></div><p class="method-comp-desc">Exit velocity, launch angle, and xwOBA are not included. These are stronger predictors but reduce sample size significantly.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">Injury blind</span></div><p class="method-comp-desc">The model cannot predict injuries. PA from the prior year is a weak proxy for health.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">Small training set</span></div><p class="method-comp-desc">134 training observations is modest. R&sup2; of 0.21 means 79% of variance is unexplained, which is honest but limiting.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">Mean regression bias</span></div><p class="method-comp-desc">Like all regression models, it systematically underestimates elite performers and overestimates below-average ones.</p></div>
+        </div>
+        <p class="method-caveat">The model is intentionally simple and transparent. It is designed to demonstrate an analytical approach, not to compete with proprietary systems used by MLB front offices.</p>
+      </div>
+    </details>
+  </div>
+</div>
+
 
 <div class="section">
   <div class="container">
@@ -500,6 +499,7 @@ document.getElementById('searchInput').addEventListener('input', e => {
 
 renderTable(projections2026);
 </script>
+
 
 <!-- Glossary Drawer -->
 <div id="gl-overlay"></div>

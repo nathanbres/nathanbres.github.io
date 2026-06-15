@@ -1,46 +1,4 @@
-<!DOCTYPE htm
-
-<div class="section" style="padding-top:0">
-  <div class="container">
-    <details class="method-details">
-      <summary class="method-summary">
-        <span class="method-label">Model Methodology</span>
-        <span class="method-hint">Luck gap calculation, regression thresholds, and 2025&rarr;2026 validation</span>
-        <span class="method-chevron">&#9660;</span>
-      </summary>
-      <div class="method-body">
-        <p class="method-intro">This analysis quantifies <strong>how much luck affected each player&rsquo;s 2025 results</strong>, then tests whether those luck signals predicted real 2026 performance. The core premise: actual wOBA minus expected xwOBA measures outcomes that contact quality alone cannot explain.</p>
-        <h3 class="method-h3">The Luck Gap Formula</h3>
-        <div class="method-formula"><code>Luck Gap = actual wOBA &minus; xwOBA &nbsp;(Statcast, min 100 PA)</code></div>
-        <p class="method-intro" style="margin-top:.75rem">A positive luck gap means a player outperformed their contact quality (favorable BABIP, well-placed hits). A negative gap means they underperformed it (hard contact with nothing to show for it). Both are expected to partially reverse.</p>
-        <h3 class="method-h3">Regression Thresholds</h3>
-        <div class="method-grid">
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#16a34a">+</span><span class="method-comp-name">Unlucky / Deserves Better</span></div><p class="method-comp-desc">Luck gap &lt; &minus;0.015. Player significantly underperformed their xwOBA. Expect a positive correction as outcomes normalize.</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">&minus;</span><span class="method-comp-name">Lucky / Regression Risk</span></div><p class="method-comp-desc">Luck gap &gt; +0.015. Player significantly outperformed their xwOBA. Expect a pullback as BABIP and sequencing normalize.</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#6b7280">~</span><span class="method-comp-name">No Signal</span></div><p class="method-comp-desc">Luck gap within &plusmn;0.015. Contact quality and results roughly aligned. No strong regression prediction.</p></div>
-        </div>
-        <p class="method-intro" style="margin-top:.5rem">The &plusmn;0.015 threshold was chosen as approximately one standard error of the luck gap distribution across the 2025 dataset.</p>
-        <h3 class="method-h3">2025 &rarr; 2026 Validation</h3>
-        <div class="method-example">
-          <div class="method-ex-row"><span class="method-ex-label">Players flagged</span><span class="method-ex-val">46</span><span class="method-ex-note">luck gap beyond &plusmn;0.015 in 2025</span></div>
-          <div class="method-ex-row"><span class="method-ex-label">Correctly predicted</span><span class="method-ex-val">30 / 46</span><span class="method-ex-note">wOBA moved in expected direction in 2026</span></div>
-          <div class="method-ex-row highlight"><span class="method-ex-label">Accuracy</span><span class="method-ex-val">65%</span><span class="method-ex-note">vs. 50% random baseline</span></div>
-          <div class="method-ex-row"><span class="method-ex-label">Data source</span><span class="method-ex-val">Baseball Savant</span><span class="method-ex-note">xwOBA, wOBA, exit velocity 2025&ndash;2026</span></div>
-        </div>
-        <h3 class="method-h3">Age Group Interpretation</h3>
-        <div class="method-grid">
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">&#x2264;25</span><span class="method-comp-name">Young</span></div><p class="method-comp-desc">Development noise is high. Luck gaps may reflect skill acquisition rather than pure luck. Regression predictions are less reliable.</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">26&ndash;30</span><span class="method-comp-name">Prime</span></div><p class="method-comp-desc">Most stable range. True talent is well-established and large gaps most strongly indicate impending regression.</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">31&ndash;35</span><span class="method-comp-name">Veteran</span></div><p class="method-comp-desc">Aging curves complicate interpretation. A negative luck gap may reflect genuine decline, not just bad luck.</p></div>
-          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">36+</span><span class="method-comp-name">Aging</span></div><p class="method-comp-desc">Decline is the prior. Positive gaps are unlikely to sustain; negative gaps may not recover. Use exit velocity trend as a secondary check.</p></div>
-        </div>
-        <p class="method-caveat">Statcast expected stats are computed by MLB using a Random Forest model trained on thousands of batted-ball outcomes. The luck gap layer adds a time-series dimension: do 2025 gaps predict 2026 movements? At 65%, they do&mdash;meaningfully above the 50% random baseline, but single-year predictions remain inherently noisy.</p>
-      </div>
-    </details>
-  </div>
-</div>
-
-l>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -202,6 +160,46 @@ l>
     </div>
   </div>
 </div>
+
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <details class="method-details">
+      <summary class="method-summary">
+        <span class="method-label">Model Methodology</span>
+        <span class="method-hint">Luck gap calculation, regression thresholds, and 2025&rarr;2026 validation</span>
+        <span class="method-chevron">&#9660;</span>
+      </summary>
+      <div class="method-body">
+        <p class="method-intro">This analysis quantifies <strong>how much luck affected each player&rsquo;s 2025 results</strong>, then tests whether those luck signals predicted real 2026 performance. The core premise: actual wOBA minus expected xwOBA measures outcomes that contact quality alone cannot explain.</p>
+        <h3 class="method-h3">The Luck Gap Formula</h3>
+        <div class="method-formula"><code>Luck Gap = actual wOBA &minus; xwOBA &nbsp;(Statcast, min 100 PA)</code></div>
+        <p class="method-intro" style="margin-top:.75rem">A positive luck gap means a player outperformed their contact quality. A negative gap means they underperformed it. Both are expected to partially reverse.</p>
+        <h3 class="method-h3">Regression Thresholds</h3>
+        <div class="method-grid">
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#16a34a">+</span><span class="method-comp-name">Unlucky / Deserves Better</span></div><p class="method-comp-desc">Luck gap &lt; &minus;0.015. Player significantly underperformed their xwOBA. Expect a positive correction as outcomes normalize.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">&minus;</span><span class="method-comp-name">Lucky / Regression Risk</span></div><p class="method-comp-desc">Luck gap &gt; +0.015. Player significantly outperformed their xwOBA. Expect a pullback as BABIP and sequencing normalize.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#6b7280">~</span><span class="method-comp-name">No Signal</span></div><p class="method-comp-desc">Luck gap within &plusmn;0.015. Contact quality and results roughly aligned. No strong regression prediction.</p></div>
+        </div>
+        <h3 class="method-h3">2025 &rarr; 2026 Validation</h3>
+        <div class="method-example">
+          <div class="method-ex-row"><span class="method-ex-label">Players flagged</span><span class="method-ex-val">46</span><span class="method-ex-note">luck gap beyond &plusmn;0.015 in 2025</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Correctly predicted</span><span class="method-ex-val">30 / 46</span><span class="method-ex-note">wOBA moved in expected direction in 2026</span></div>
+          <div class="method-ex-row highlight"><span class="method-ex-label">Accuracy</span><span class="method-ex-val">65%</span><span class="method-ex-note">vs. 50% random baseline</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Data source</span><span class="method-ex-val">Baseball Savant</span><span class="method-ex-note">xwOBA, wOBA, exit velocity 2025&ndash;2026</span></div>
+        </div>
+        <h3 class="method-h3">Age Group Interpretation</h3>
+        <div class="method-grid">
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">&#x2264;25</span><span class="method-comp-name">Young</span></div><p class="method-comp-desc">Development noise is high. Luck gaps may reflect skill acquisition. Regression predictions are less reliable for this group.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">26&ndash;30</span><span class="method-comp-name">Prime</span></div><p class="method-comp-desc">Most stable range. True talent is established and large gaps most strongly indicate impending regression.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">31&ndash;35</span><span class="method-comp-name">Veteran</span></div><p class="method-comp-desc">Aging curves complicate interpretation. A negative luck gap may reflect genuine decline rather than bad luck.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight">36+</span><span class="method-comp-name">Aging</span></div><p class="method-comp-desc">Decline is the prior. Positive gaps are unlikely to sustain; negative gaps may not fully recover.</p></div>
+        </div>
+        <p class="method-caveat">Statcast expected stats are computed by MLB using a Random Forest model. The luck gap layer adds a time-series dimension: do 2025 gaps predict 2026 movements? At 65%, they do, meaningfully above the 50% random baseline, but single-year predictions remain inherently noisy.</p>
+      </div>
+    </details>
+  </div>
+</div>
+
 
 <!-- Key Findings -->
 <div class="section">
