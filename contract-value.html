@@ -309,7 +309,6 @@ function renderCharts() {
 const STATUS_COLOR = {'Pre-Arb':'#3b82f6','Arbitration':'#f59e0b','Free Agent':'#6b7280'};
 const TYPE_SHAPE = {'Batter':'circle','Pitcher':'diamond'};
 
-function renderCharts() {
 // ── Scatter ─────────────────────────────────────────────
 (function(){
   const maxSal = Math.max(...DATA.map(d=>d.Salary_2025));
@@ -387,7 +386,6 @@ function renderCharts() {
   },{responsive:true,displayModeBar:false});
 })();
 
-}
 }
 renderCharts();
 
