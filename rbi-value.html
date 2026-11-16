@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>RBI per PA vs. Salary | Nathan Brès</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--bg:#fff;--bg2:#f8f9fc;--bg3:#f0f2f8;--navy:#0A1628;--navy2:#1a2e4a;--text:#1a1f2e;--muted:#64748b;--border:#e2e8f0;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706;--gold:#C8A96E;--font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6}
+    .page-header{background:var(--navy);color:#fff;padding:3rem 2rem 2.5rem;text-align:center}
+    .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+    .page-header h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;letter-spacing:-.02em;margin-bottom:.75rem}
+    .page-header p{font-size:1rem;color:rgba(255,255,255,.65);max-width:660px;margin:0 auto 1.5rem}
+    .badges{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+    .badge{font-family:var(--mono);font-size:.72rem;padding:.35rem .85rem;border-radius:2px;letter-spacing:.06em;font-weight:500}
+    .badge-blue{background:rgba(37,99,235,.2);color:#93c5fd;border:1px solid rgba(37,99,235,.3)}
+    .badge-green{background:rgba(22,163,74,.2);color:#86efac;border:1px solid rgba(22,163,74,.3)}
+    .badge-gold{background:rgba(200,169,110,.15);color:var(--gold);border:1px solid rgba(200,169,110,.3)}
+    .stats-bar{background:var(--navy2);padding:1.25rem 2rem}
+    .stats-inner{max-width:1100px;margin:0 auto;display:flex;gap:2rem;justify-content:center;flex-wrap:wrap}
+    .stat-item{text-align:center}
+    .stat-value{font-family:var(--mono);font-size:1.4rem;font-weight:600;color:var(--gold);display:block}
+    .stat-label{font-size:.72rem;color:rgba(255,255,255,.5);letter-spacing:.08em;text-transform:uppercase}
+    .stat-div{width:1px;background:rgba(255,255,255,.1);align-self:stretch}
+    .container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+    .section{padding:3rem 1.5rem}
+    .section:nth-child(even){background:var(--bg2)}
+    .section-title{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}
+    .section-desc{font-size:.9rem;color:var(--muted);margin-bottom:1.75rem;max-width:720px}
+    .method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+    .method-card{background:var(--bg);border:1px solid var(--border);padding:1.25rem;border-left:3px solid var(--blue)}
+    .method-card h4{font-size:.82rem;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+    .method-card p{font-size:.85rem;color:var(--muted);line-height:1.6}
+    .method-card code{font-family:var(--mono);font-size:.78rem;background:var(--bg3);padding:.1rem .3rem;color:var(--blue)}
+    .weight-tag{display:inline-block;font-family:var(--mono);font-size:.7rem;background:rgba(200,169,110,.15);color:var(--gold);border:1px solid rgba(200,169,110,.3);padding:.1rem .4rem;border-radius:2px;margin-bottom:.4rem}
+    .finding-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1rem;margin-bottom:1.5rem}
+    .finding-card{padding:1.25rem;border-radius:2px}
+    .finding-card.green{background:#f0fdf4;border:1px solid #86efac;border-left:3px solid var(--green)}
+    .finding-card.amber{background:#fffbeb;border:1px solid #fcd34d;border-left:3px solid var(--amber)}
+    .finding-card.blue{background:#eff6ff;border:1px solid #bfdbfe;border-left:3px solid var(--blue)}
+    .finding-card.red{background:#fef2f2;border:1px solid #fca5a5;border-left:3px solid var(--red)}
+    .finding-card h4{font-size:.82rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+    .finding-card.green h4{color:var(--green)}
+    .finding-card.amber h4{color:var(--amber)}
+    .finding-card.blue h4{color:var(--blue)}
+    .finding-card.red h4{color:var(--red)}
+    .finding-card p{font-size:.85rem;color:var(--text);line-height:1.6}
+    .finding-card strong{font-weight:600}
+    .chart-box{background:var(--bg);border:1px solid var(--border);padding:1.25rem;margin-bottom:.5rem}
+    @media(max-width:640px){#chart-stability,#chart-top20{height:420px!important}#chart-scatter{height:400px!important}.chart-box{padding:.75rem}}
+    .chart-source{font-size:.72rem;color:var(--muted);font-family:var(--mono);text-align:right;padding-top:.5rem}
+    .war-sparkline{display:flex;gap:3px;align-items:flex-end;height:28px}
+    .war-bar{width:8px;border-radius:1px;min-height:2px}
+    .filter-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+    .search-input{padding:.45rem .9rem;border:1px solid var(--border);font-family:var(--font);font-size:.84rem;color:var(--text);outline:none;width:190px}
+    .search-input:focus{border-color:var(--blue)}
+    .filter-btn{padding:.45rem .85rem;border:1px solid var(--border);background:var(--bg);font-family:var(--font);font-size:.78rem;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+    .filter-btn.active,.filter-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+    .val-table{width:100%;border-collapse:collapse;font-size:.84rem}
+    .val-table th{background:var(--navy);color:#fff;padding:.65rem .8rem;text-align:left;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;font-weight:500;white-space:nowrap;cursor:pointer}
+    .val-table th:hover{background:var(--navy2)}
+    .val-table td{padding:.55rem .8rem;border-bottom:1px solid var(--border);vertical-align:middle}
+    .val-table tr:hover td{background:var(--bg2)}
+    .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-family:var(--mono);font-size:.7rem;font-weight:600;background:var(--bg3);color:var(--muted)}
+    .rank-badge.top3{background:var(--gold);color:#fff}
+    .rank-badge.top10{background:var(--navy);color:#fff}
+    .mono{font-family:var(--mono);font-size:.8rem}
+    .score-bar{display:inline-flex;align-items:center;gap:.5rem}
+    .score-fill{height:6px;border-radius:3px;background:linear-gradient(90deg,#2563eb,#C8A96E)}
+    .pos-val{color:var(--green);font-weight:600;font-family:var(--mono);font-size:.8rem}
+    .neg-val{color:var(--red);font-weight:500;font-family:var(--mono);font-size:.8rem}
+    .neutral-val{color:var(--muted);font-family:var(--mono);font-size:.8rem}
+    .trend-up{color:var(--green);font-size:.75rem}
+    .trend-dn{color:var(--red);font-size:.75rem}
+    .trend-flat{color:var(--muted);font-size:.75rem}
+    .pagination{display:flex;gap:.4rem;align-items:center;margin-top:.85rem;flex-wrap:wrap}
+    .page-btn{padding:.35rem .7rem;border:1px solid var(--border);background:var(--bg);font-family:var(--mono);font-size:.75rem;color:var(--muted);cursor:pointer;border-radius:2px;transition:all .15s}
+    .page-btn:hover,.page-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+    .page-btn:disabled{opacity:.35;cursor:default}
+    .page-footer{background:var(--navy);color:rgba(255,255,255,.4);text-align:center;padding:1.5rem;font-size:.75rem;font-family:var(--mono)}
+    @media(max-width:640px){
+      .stats-inner{gap:1rem}.stat-div{display:none}
+      .val-table{font-size:.73rem}.val-table th,.val-table td{padding:.4rem .45rem}
+      .val-table th:nth-child(6),.val-table td:nth-child(6),
+      .val-table th:nth-child(7),.val-table td:nth-child(7){display:none}
+    }
+  
+    .update-card{background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:2px;padding:.9rem 1rem}
+    .update-card.update-up{border-left-color:#16a34a}
+    .update-card.update-down{border-left-color:#2563eb}
+    .update-name{font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:.25rem}
+    .update-change{font-family:var(--mono);font-size:.75rem;color:var(--text);margin-bottom:.3rem}
+    .update-change .arrow{color:var(--muted);margin:0 .2rem}
+    .update-note{font-size:.78rem;color:var(--muted);line-height:1.4}
+    
+    .method-details{border:1px solid var(--border);border-radius:3px;background:var(--bg)}
+    .method-summary{display:flex;align-items:center;gap:.75rem;padding:1rem 1.25rem;cursor:pointer;list-style:none;user-select:none}
+    .method-summary::-webkit-details-marker{display:none}
+    .method-summary:hover{background:var(--bg2)}
+    .method-label{font-weight:700;font-size:.9rem;color:var(--navy)}
+    .method-hint{font-size:.78rem;color:var(--muted);flex:1}
+    .method-chevron{font-size:.7rem;color:var(--muted);transition:transform .2s}
+    details[open] .method-chevron{transform:rotate(180deg)}
+    .method-body{padding:1.25rem 1.25rem 1.5rem;border-top:1px solid var(--border)}
+    .method-intro{font-size:.85rem;color:var(--text);line-height:1.6;margin-bottom:1.25rem}
+    .method-h3{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:1.25rem 0 .6rem}
+    .method-formula{background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:.9rem 1rem;margin-bottom:1rem}
+    .method-formula code{font-family:var(--mono);font-size:.78rem;color:var(--navy);line-height:1.6}
+    .method-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.65rem;margin-bottom:1rem}
+    .method-comp{background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:.8rem .9rem}
+    .method-comp-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem}
+    .method-weight{background:var(--navy);color:#fff;font-family:var(--mono);font-size:.7rem;font-weight:700;padding:.15rem .4rem;border-radius:2px}
+    .method-comp-name{font-weight:700;font-size:.82rem;color:var(--navy)}
+    .method-comp-desc{font-size:.78rem;color:var(--muted);line-height:1.5;margin:0}
+    .method-example{background:var(--bg2);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:1rem}
+    .method-ex-row{display:grid;grid-template-columns:140px 1fr 1fr;align-items:center;padding:.5rem .9rem;border-bottom:1px solid var(--border);font-size:.78rem}
+    .method-ex-row:last-child{border-bottom:none}
+    .method-ex-row.highlight{background:#f0fdf4}
+    .method-ex-label{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+    .method-ex-val{font-weight:700;color:var(--navy)}
+    .method-ex-note{color:var(--muted);font-size:.72rem}
+    .method-caveat{font-size:.75rem;color:var(--muted);line-height:1.55;font-style:italic;margin:0}
+    @media(max-width:640px){.method-ex-row{grid-template-columns:120px 1fr}.method-ex-note{display:none}.method-grid{grid-template-columns:1fr}}
+    
+    .takeaway{background:var(--bg2);border:1px solid var(--border);border-left:4px solid var(--navy);border-radius:2px;padding:1.5rem 1.75rem;margin-top:0}
+    .takeaway-label{font-family:var(--mono);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);margin-bottom:.6rem}
+    .takeaway-title{font-size:1.05rem;font-weight:700;color:var(--navy);margin-bottom:.75rem}
+    .takeaway p{font-size:.88rem;color:var(--text);line-height:1.7;margin:0 0 .6rem}
+    .takeaway p:last-child{margin:0}
+    .takeaway strong{color:var(--navy)}
+    
+    .sig-verdict{background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid #f97316;border-radius:2px;padding:1.25rem 1.5rem;margin-bottom:1rem}
+    .sig-verdict-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem}
+    .sig-icon{font-size:1.1rem;color:#f97316}
+    .sig-title{font-weight:700;font-size:.9rem;color:#9a3412}
+    .sig-verdict p{font-size:.84rem;color:#7c2d12;line-height:1.65;margin:0 0 .5rem}
+    .sig-verdict p:last-child{margin:0}
+    .sig-caveat{background:var(--bg2);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:2px;padding:1.25rem 1.5rem}
+    .sig-caveat-header{font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:.6rem}
+    .sig-caveat p{font-size:.84rem;color:var(--text);line-height:1.65;margin:0 0 .5rem}
+    .sig-caveat p:last-child{margin:0}
+    
+    .tag{display:inline-block;padding:.15rem .5rem;border-radius:2px;font-size:.7rem;font-weight:600;font-family:var(--mono);white-space:nowrap}
+    .tag-pre{background:#eff6ff;color:#1d4ed8}.tag-arb{background:#fff7ed;color:#92400e}.tag-fa{background:#f3f4f6;color:#374151}
+    @media(max-width:640px){#chart-scatter{height:420px!important}#chart-teams{height:620px!important}#chart-top{height:460px!important}}
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+  <p class="eyebrow">Portfolio · Run Production Value</p>
+  <h1>RBI per PA vs. Salary</h1>
+  <p>How many runs does a hitter drive in per plate appearance, once his team's scoring environment is removed, and does a bigger salary buy more of it? Tested on the full 2026 regular season.</p>
+  <div class="badges">
+    <span class="badge badge-blue">Python · Pandas · SciPy</span>
+    <span class="badge badge-green">RBI/PA · Team Context · Linear Regression</span>
+    <span class="badge badge-gold">Baseball Reference · Spotrac · 2026 · 263 Batters</span>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><span class="stat-value">263</span><span class="stat-label">Batters (300+ PA)</span></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><span class="stat-value">0.113</span><span class="stat-label">MLB RBI per PA</span></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><span class="stat-value">0.07</span><span class="stat-label">Correlation with Salary</span></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><span class="stat-value">0.4%</span><span class="stat-label">Variance Explained</span></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><span class="stat-value">0.28</span><span class="stat-label">p-value (not significant)</span></div>
+  </div>
+</div>
+
+<!-- How It Works -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-desc">RBI is the most intuitive run production stat, but it depends heavily on context: a hitter can only drive in the runners his teammates put on base. This analysis builds a per-plate-appearance rate, corrects it for the team's scoring environment, then compares it with what each player is paid.</p>
+    <div class="method-grid">
+      <div class="method-card">
+        <h4>The Indicator</h4>
+        <p><code>RBI / PA</code>: runs driven in per plate appearance. A rate, so part-time and full-time hitters are comparable. Minimum 300 PA.</p>
+      </div>
+      <div class="method-card">
+        <h4>Team Adjustment</h4>
+        <p>Each player's rate is divided by a <code>Team Context Index</code>: the RBI/PA of his teammates relative to the MLB average, with his own production removed.</p>
+      </div>
+      <div class="method-card">
+        <h4>Salary</h4>
+        <p>2026 salaries from <code>Spotrac</code>, on a log scale, with contract status (Pre-Arb, Arbitration, Free Agent) as context.</p>
+      </div>
+      <div class="method-card">
+        <h4>The Test</h4>
+        <p>A linear regression of adjusted RBI/PA on <code>log10(salary)</code>, run on all batters and within each contract status.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Methodology -->
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <details class="method-details">
+      <summary class="method-summary">
+        <span class="method-label">Model Methodology</span>
+        <span class="method-hint">Team adjustment formula, worked example, regression results, and limitations</span>
+        <span class="method-chevron">&#9660;</span>
+      </summary>
+      <div class="method-body">
+        <p class="method-intro">The goal is to answer one question: <strong>how many runs does a hitter drive in per plate appearance, for what he is paid?</strong> Raw RBI totals reward playing time and strong lineups, so two corrections are applied: a per-PA rate, and a team context adjustment.</p>
+        <h3 class="method-h3">Formula</h3>
+        <div class="method-formula">
+          <code>Team Context Index = [(Team RBI &minus; Player RBI) / (Team PA &minus; Player PA)] / MLB RBI per PA</code><br>
+          <code>Adjusted RBI/PA = (Player RBI / Player PA) / Team Context Index</code>
+        </div>
+        <p class="method-intro">The player's own numbers are removed from the team total before computing the index. Without that step, a great run producer would raise his own team's average and be penalized for it. For players who changed teams, the index is weighted by plate appearances with each club.</p>
+        <h3 class="method-h3">Worked Example: Kazuma Okamoto (TOR)</h3>
+        <div class="method-example">
+          <div class="method-ex-row"><span class="method-ex-label">Raw RBI/PA</span><span class="method-ex-val">92 / 636 = 0.145</span><span class="method-ex-note">28% above the MLB average of 0.113</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Teammates</span><span class="method-ex-val">523 / 5,408 = 0.097</span><span class="method-ex-note">Toronto without Okamoto: the weakest context in MLB</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Context Index</span><span class="method-ex-val">0.097 / 0.113 = 0.855</span><span class="method-ex-note">15% fewer RBI chances than average</span></div>
+          <div class="method-ex-row highlight"><span class="method-ex-label">Adjusted RBI/PA</span><span class="method-ex-val">0.145 / 0.855 = 0.169</span><span class="method-ex-note">101 RBI per 600 PA, 8th of 263</span></div>
+        </div>
+        <h3 class="method-h3">Regression Results</h3>
+        <div class="method-example">
+          <div class="method-ex-row" style="font-weight:700;background:var(--bg3)"><span class="method-ex-label">Model</span><span class="method-ex-val">r</span><span class="method-ex-note">p-value</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Raw, all batters</span><span class="method-ex-val">+0.08</span><span class="method-ex-note">0.22 (n = 263)</span></div>
+          <div class="method-ex-row highlight"><span class="method-ex-label">Adjusted, all</span><span class="method-ex-val">+0.07</span><span class="method-ex-note">0.28 (n = 263)</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Pre-Arb only</span><span class="method-ex-val">0.00</span><span class="method-ex-note">0.99 (n = 103)</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Arbitration only</span><span class="method-ex-val">&minus;0.04</span><span class="method-ex-note">0.73 (n = 73)</span></div>
+          <div class="method-ex-row"><span class="method-ex-label">Free Agent only</span><span class="method-ex-val">+0.04</span><span class="method-ex-note">0.70 (n = 87)</span></div>
+        </div>
+        <h3 class="method-h3">Known Limitations</h3>
+        <div class="method-grid">
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">Batting order is not corrected</span></div><p class="method-comp-desc">The adjustment handles the team, not the lineup slot. A leadoff hitter sees far fewer runners on base than a cleanup hitter on the same club.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">RBI is a context stat</span></div><p class="method-comp-desc">It measures opportunity as much as skill. A cleaner version would divide by actual runners on base (the share of baserunners driven in).</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">Salary is a single-year figure</span></div><p class="method-comp-desc">2026 cash salary can understate a contract (signing bonuses, deferred money). Contract status is proxied by salary bands, not by actual service time.</p></div>
+          <div class="method-comp"><div class="method-comp-header"><span class="method-weight" style="background:#dc2626">!</span><span class="method-comp-name">One season</span></div><p class="method-comp-desc">A single year of RBI/PA is noisy. Four batters without a listed 2026 salary are excluded from the regression.</p></div>
+        </div>
+        <p class="method-caveat">Contract status bands: Pre-Arb under $1M, Arbitration from $1M to under $7M, Free Agent $7M and above. The team adjustment changes the picture only modestly: raw and adjusted rankings correlate at 0.96.</p>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- Key Findings -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">Key Findings</h2>
+    <p class="section-desc">The headline is a null result, and a useful one: on the 2026 season, salary tells you almost nothing about how efficiently a hitter drives in runs.</p>
+    <div class="finding-grid">
+      <div class="finding-card red">
+        <h4>Salary Does Not Buy RBI Efficiency</h4>
+        <p>Across 263 batters, the correlation between salary and adjusted RBI/PA is <strong>r = 0.07</strong> (p = 0.28). Salary explains <strong>0.4%</strong> of the variation. The result holds inside every contract status.</p>
+      </div>
+      <div class="finding-card green">
+        <h4>The Best Rates Come Cheap</h4>
+        <p><strong>Alec Burleson</strong> (STL, $3.3M) and <strong>Sal Stewart</strong> (CIN, pre-arb) lead MLB at <strong>0.185</strong> adjusted RBI/PA, about 111 RBI per 600 PA. Four of the top six earn under $1M.</p>
+      </div>
+      <div class="finding-card blue">
+        <h4>Team Context Is Real but Modest</h4>
+        <p>Run environments range from <strong>0.90</strong> (Toronto) to <strong>1.11</strong> (Cubs). The adjustment moves <strong>Andr&eacute;s Gim&eacute;nez</strong> up 48 places and <strong>Christian Yelich</strong> down 57, yet the overall ranking barely changes.</p>
+      </div>
+      <div class="finding-card amber">
+        <h4>Expensive and Low: Mostly a Role Effect</h4>
+        <p><strong>Trea Turner</strong> ($27.3M, 0.080), <strong>Jose Altuve</strong> ($30M, 0.084) and <strong>Mike Trout</strong> ($35.5M, 0.092) sit near the bottom. Top-of-the-order hitters bat with fewer runners on, so this reflects lineup role more than decline.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scatter -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">Salary vs. Adjusted RBI per 600 PA</h2>
+    <p class="section-desc">Each dot is one batter. If salary bought run production, the cloud would climb from left to right. The regression line is almost flat. Hover for player details.</p>
+    <div class="chart-box">
+      <div id="chart-scatter" style="height:540px"></div>
+      <div class="chart-source">Source: Baseball Reference · Spotrac · 2026 regular season · Nathan Brès, 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- Team context -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">Team Context Index by Club</h2>
+    <p class="section-desc">Team RBI per plate appearance relative to the MLB average. This is the environment each hitter's raw rate is corrected for: hitters on clubs above 1.00 are adjusted down, hitters below 1.00 are adjusted up.</p>
+    <div class="chart-box">
+      <div id="chart-teams" style="height:680px"></div>
+      <div class="chart-source">Source: Baseball Reference · 2026 regular season · Nathan Brès, 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- Top 20 -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">Top 20 Adjusted Run Producers</h2>
+    <p class="section-desc">Highest adjusted RBI per 600 PA. Bar color shows contract status: all three salary tiers are represented at the top.</p>
+    <div class="chart-box">
+      <div id="chart-top" style="height:560px"></div>
+      <div class="chart-source">Source: Baseball Reference · Spotrac · 2026 regular season · Nathan Brès, 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- Full Table -->
+<div class="section">
+  <div class="container">
+    <h2 class="section-title">Full RBI per PA Table</h2>
+    <p class="section-desc">All 263 batters, sortable and filterable by contract status. "vs Expected" is adjusted RBI per 600 PA minus what the regression predicts at that salary.</p>
+    <div class="filter-row">
+      <input class="search-input" id="searchInput" type="text" placeholder="Search player or team..."/>
+      <button class="filter-btn active" onclick="setStatus('all',this)">All Status</button>
+      <button class="filter-btn" onclick="setStatus('Pre-Arb',this)">Pre-Arb</button>
+      <button class="filter-btn" onclick="setStatus('Arbitration',this)">Arbitration</button>
+      <button class="filter-btn" onclick="setStatus('Free Agent',this)">Free Agent</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="val-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th onclick="sortTable('Player')">Player ↕</th>
+            <th onclick="sortTable('Team')">Team ↕</th>
+            <th onclick="sortTable('PA')">PA ↕</th>
+            <th onclick="sortTable('RBI')">RBI ↕</th>
+            <th onclick="sortTable('rbi_pa')">RBI/PA ↕</th>
+            <th onclick="sortTable('ctx')">Team Ctx ↕</th>
+            <th onclick="sortTable('adj')">Adj RBI/PA ↕</th>
+            <th onclick="sortTable('rbi600')">Per 600 PA ↕</th>
+            <th onclick="sortTable('Salary')">Salary ↕</th>
+            <th onclick="sortTable('status')">Status ↕</th>
+            <th onclick="sortTable('vs_exp')">vs Expected ↕</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <p id="tableCount" style="font-size:.78rem;color:var(--muted);margin-top:.6rem;font-family:var(--mono)"></p>
+    <div class="pagination" id="tablePagination"></div>
+    <div class="chart-source" style="margin-top:.75rem">Source: Baseball Reference · Spotrac · 2026 regular season · Nathan Brès, 2026</div>
+  </div>
+</div>
+
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <div class="takeaway">
+      <div class="takeaway-label">So What?</div>
+      <div class="takeaway-title">The Market Does Not Pay for RBI, and It Is Probably Right</div>
+      <p>The original question was simple: how many runs does a hitter drive in for his salary? On the 2026 season the answer is that <strong>salary and RBI efficiency are unrelated</strong> (r = 0.07, p = 0.28). Free agents average 71 adjusted RBI per 600 PA at a median salary of $15.7M. Pre-arbitration players average 69 at $0.8M. Twenty times the money buys fewer than three extra RBI.</p>
+      <p>That is not evidence of a market inefficiency. Front offices pay for total value (WAR) and contact quality, not for a stat that depends on who is standing on base. <strong>Trea Turner, Jose Altuve and Steven Kwan</strong> rank near the bottom because they hit at the top of the order, not because they are poor hitters. The team adjustment fixes the club effect, but not the lineup slot.</p>
+      <p>Where the indicator is useful: as a <strong>cheap screen for run producers in weak lineups</strong>. Kazuma Okamoto ($7M, Toronto), Vaughn Grissom (pre-arb, Angels) and Eugenio Su&aacute;rez ($15M, Reds) all gain ground once their context is removed. The natural next step is to replace plate appearances with actual runners on base, which would isolate the skill from the opportunity.</p>
+    </div>
+  </div>
+</div>
+
+<div class="page-footer">Nathan Brès · RBI per PA vs. Salary · Team-Adjusted Run Production · Baseball Reference · nathanbres.github.io</div>
+
+<script>
+const isMobile = window.innerWidth < 640;
+const DATA = [{"Player": "Alec Burleson", "Team": "STL", "Age": 27, "PA": 670, "HR": 26, "RBI": 116, "rbi_pa": 0.173, "ctx": 0.937, "adj": 0.185, "rbi600": 110.9, "Salary": 3300000, "status": "Arbitration", "vs_exp": 40.2}, {"Player": "Sal Stewart", "Team": "CIN", "Age": 22, "PA": 700, "HR": 32, "RBI": 112, "rbi_pa": 0.16, "ctx": 0.866, "adj": 0.185, "rbi600": 110.9, "Salary": 781500, "status": "Pre-Arb", "vs_exp": 41.3}, {"Player": "Owen Caissie", "Team": "MIA", "Age": 23, "PA": 330, "HR": 14, "RBI": 58, "rbi_pa": 0.176, "ctx": 0.956, "adj": 0.184, "rbi600": 110.3, "Salary": 781500, "status": "Pre-Arb", "vs_exp": 40.7}, {"Player": "Vaughn Grissom", "Team": "LAA", "Age": 25, "PA": 474, "HR": 13, "RBI": 72, "rbi_pa": 0.152, "ctx": 0.873, "adj": 0.174, "rbi600": 104.3, "Salary": 800000, "status": "Pre-Arb", "vs_exp": 34.7}, {"Player": "Rafael Devers", "Team": "SFG", "Age": 29, "PA": 633, "HR": 37, "RBI": 98, "rbi_pa": 0.155, "ctx": 0.892, "adj": 0.174, "rbi600": 104.1, "Salary": 27500000, "status": "Free Agent", "vs_exp": 31.7}, {"Player": "Nick Kurtz", "Team": "ATH", "Age": 23, "PA": 434, "HR": 21, "RBI": 69, "rbi_pa": 0.159, "ctx": 0.933, "adj": 0.17, "rbi600": 102.2, "Salary": 785000, "status": "Pre-Arb", "vs_exp": 32.6}, {"Player": "Pete Alonso", "Team": "BAL", "Age": 31, "PA": 700, "HR": 43, "RBI": 113, "rbi_pa": 0.161, "ctx": 0.95, "adj": 0.17, "rbi600": 102.0, "Salary": 18500000, "status": "Free Agent", "vs_exp": 29.9}, {"Player": "Kazuma Okamoto", "Team": "TOR", "Age": 30, "PA": 636, "HR": 33, "RBI": 92, "rbi_pa": 0.145, "ctx": 0.855, "adj": 0.169, "rbi600": 101.6, "Salary": 7000000, "status": "Free Agent", "vs_exp": 30.2}, {"Player": "Ryan O'Hearn", "Team": "PIT", "Age": 32, "PA": 451, "HR": 18, "RBI": 76, "rbi_pa": 0.169, "ctx": 1.001, "adj": 0.168, "rbi600": 101.0, "Salary": 14000000, "status": "Free Agent", "vs_exp": 29.2}, {"Player": "Eugenio Suárez", "Team": "CIN", "Age": 34, "PA": 498, "HR": 26, "RBI": 74, "rbi_pa": 0.149, "ctx": 0.895, "adj": 0.166, "rbi600": 99.6, "Salary": 15000000, "status": "Free Agent", "vs_exp": 27.7}, {"Player": "Willson Contreras", "Team": "BOS", "Age": 34, "PA": 535, "HR": 27, "RBI": 81, "rbi_pa": 0.151, "ctx": 0.914, "adj": 0.166, "rbi600": 99.4, "Salary": 18000000, "status": "Free Agent", "vs_exp": 27.3}, {"Player": "Angel Martínez", "Team": "CLE", "Age": 24, "PA": 416, "HR": 18, "RBI": 62, "rbi_pa": 0.149, "ctx": 0.911, "adj": 0.164, "rbi600": 98.1, "Salary": 788000, "status": "Pre-Arb", "vs_exp": 28.5}, {"Player": "Joe Mack", "Team": "MIA", "Age": 23, "PA": 330, "HR": 14, "RBI": 52, "rbi_pa": 0.158, "ctx": 0.965, "adj": 0.163, "rbi600": 98.0, "Salary": 780000, "status": "Pre-Arb", "vs_exp": 28.4}, {"Player": "Andrew Benintendi", "Team": "CHW", "Age": 31, "PA": 468, "HR": 15, "RBI": 78, "rbi_pa": 0.167, "ctx": 1.023, "adj": 0.163, "rbi600": 97.8, "Salary": 16500000, "status": "Free Agent", "vs_exp": 25.7}, {"Player": "Nathaniel Lowe", "Team": "2TM", "Age": 30, "PA": 429, "HR": 17, "RBI": 64, "rbi_pa": 0.149, "ctx": 0.919, "adj": 0.162, "rbi600": 97.4, "Salary": 1750000, "status": "Arbitration", "vs_exp": 27.1}, {"Player": "Dominic Canzone", "Team": "SEA", "Age": 28, "PA": 533, "HR": 23, "RBI": 77, "rbi_pa": 0.144, "ctx": 0.892, "adj": 0.162, "rbi600": 97.1, "Salary": 796600, "status": "Pre-Arb", "vs_exp": 27.5}, {"Player": "Luis García Jr.", "Team": "2TM", "Age": 26, "PA": 543, "HR": 30, "RBI": 92, "rbi_pa": 0.169, "ctx": 1.059, "adj": 0.16, "rbi600": 96.0, "Salary": 6875000, "status": "Arbitration", "vs_exp": 24.7}, {"Player": "Dillon Dingler", "Team": "DET", "Age": 27, "PA": 607, "HR": 27, "RBI": 91, "rbi_pa": 0.15, "ctx": 0.94, "adj": 0.16, "rbi600": 95.7, "Salary": 834900, "status": "Pre-Arb", "vs_exp": 26.1}, {"Player": "Jordan Walker", "Team": "STL", "Age": 24, "PA": 667, "HR": 29, "RBI": 102, "rbi_pa": 0.153, "ctx": 0.959, "adj": 0.159, "rbi600": 95.7, "Salary": 799400, "status": "Pre-Arb", "vs_exp": 26.1}, {"Player": "Jake Burger", "Team": "TEX", "Age": 30, "PA": 620, "HR": 28, "RBI": 90, "rbi_pa": 0.145, "ctx": 0.911, "adj": 0.159, "rbi600": 95.6, "Salary": 3200000, "status": "Arbitration", "vs_exp": 24.9}, {"Player": "Jo Adell", "Team": "2TM", "Age": 27, "PA": 660, "HR": 23, "RBI": 94, "rbi_pa": 0.142, "ctx": 0.898, "adj": 0.159, "rbi600": 95.2, "Salary": 5200000, "status": "Arbitration", "vs_exp": 24.1}, {"Player": "Oneil Cruz", "Team": "PIT", "Age": 27, "PA": 419, "HR": 20, "RBI": 67, "rbi_pa": 0.16, "ctx": 1.009, "adj": 0.159, "rbi600": 95.1, "Salary": 3300000, "status": "Arbitration", "vs_exp": 24.4}, {"Player": "Yordan Alvarez", "Team": "HOU", "Age": 29, "PA": 692, "HR": 42, "RBI": 106, "rbi_pa": 0.153, "ctx": 0.968, "adj": 0.158, "rbi600": 94.9, "Salary": 26000000, "status": "Free Agent", "vs_exp": 22.5}, {"Player": "Alejandro Kirk", "Team": "TOR", "Age": 27, "PA": 313, "HR": 10, "RBI": 43, "rbi_pa": 0.137, "ctx": 0.882, "adj": 0.156, "rbi600": 93.5, "Salary": 7500000, "status": "Free Agent", "vs_exp": 22.1}, {"Player": "Josh Bell", "Team": "MIN", "Age": 33, "PA": 631, "HR": 21, "RBI": 96, "rbi_pa": 0.152, "ctx": 0.982, "adj": 0.155, "rbi600": 92.9, "Salary": 5500000, "status": "Arbitration", "vs_exp": 21.8}, {"Player": "Gabriel Moreno", "Team": "ARI", "Age": 26, "PA": 549, "HR": 16, "RBI": 83, "rbi_pa": 0.151, "ctx": 0.983, "adj": 0.154, "rbi600": 92.3, "Salary": 2550000, "status": "Arbitration", "vs_exp": 21.7}, {"Player": "Hunter Goodman", "Team": "COL", "Age": 26, "PA": 574, "HR": 41, "RBI": 88, "rbi_pa": 0.153, "ctx": 0.999, "adj": 0.153, "rbi600": 92.1, "Salary": 810000, "status": "Pre-Arb", "vs_exp": 22.5}, {"Player": "Jorge Soler", "Team": "LAA", "Age": 34, "PA": 361, "HR": 12, "RBI": 49, "rbi_pa": 0.136, "ctx": 0.892, "adj": 0.152, "rbi600": 91.3, "Salary": 13000000, "status": "Free Agent", "vs_exp": 19.5}, {"Player": "Ryan Jeffers", "Team": "MIN", "Age": 29, "PA": 369, "HR": 14, "RBI": 56, "rbi_pa": 0.152, "ctx": 0.999, "adj": 0.152, "rbi600": 91.1, "Salary": 6700000, "status": "Arbitration", "vs_exp": 19.8}, {"Player": "Liam Hicks", "Team": "2TM", "Age": 27, "PA": 554, "HR": 18, "RBI": 82, "rbi_pa": 0.148, "ctx": 0.975, "adj": 0.152, "rbi600": 91.1, "Salary": 790000, "status": "Pre-Arb", "vs_exp": 21.5}, {"Player": "CJ Abrams", "Team": "WSN", "Age": 25, "PA": 654, "HR": 33, "RBI": 106, "rbi_pa": 0.162, "ctx": 1.07, "adj": 0.151, "rbi600": 90.9, "Salary": 4200000, "status": "Arbitration", "vs_exp": 20.0}, {"Player": "Ezequiel Durán", "Team": "TEX", "Age": 27, "PA": 597, "HR": 17, "RBI": 83, "rbi_pa": 0.139, "ctx": 0.918, "adj": 0.151, "rbi600": 90.8, "Salary": 1375000, "status": "Arbitration", "vs_exp": 20.8}, {"Player": "Adley Rutschman", "Team": "2TM", "Age": 28, "PA": 410, "HR": 13, "RBI": 60, "rbi_pa": 0.146, "ctx": 0.973, "adj": 0.15, "rbi600": 90.3, "Salary": 7250000, "status": "Free Agent", "vs_exp": 18.9}, {"Player": "Dominic Smith", "Team": "ATL", "Age": 31, "PA": 300, "HR": 9, "RBI": 46, "rbi_pa": 0.153, "ctx": 1.021, "adj": 0.15, "rbi600": 90.1, "Salary": 1250000, "status": "Arbitration", "vs_exp": 20.1}, {"Player": "Juan Soto", "Team": "NYM", "Age": 27, "PA": 482, "HR": 27, "RBI": 68, "rbi_pa": 0.141, "ctx": 0.942, "adj": 0.15, "rbi600": 89.9, "Salary": 46875000, "status": "Free Agent", "vs_exp": 17.0}, {"Player": "Mickey Moniak", "Team": "COL", "Age": 28, "PA": 436, "HR": 23, "RBI": 65, "rbi_pa": 0.149, "ctx": 1.01, "adj": 0.148, "rbi600": 88.5, "Salary": 4000000, "status": "Arbitration", "vs_exp": 17.6}, {"Player": "Junior Caminero", "Team": "TBR", "Age": 22, "PA": 702, "HR": 42, "RBI": 101, "rbi_pa": 0.144, "ctx": 0.98, "adj": 0.147, "rbi600": 88.1, "Salary": 794800, "status": "Pre-Arb", "vs_exp": 18.5}, {"Player": "Jac Caglianone", "Team": "KCR", "Age": 23, "PA": 553, "HR": 23, "RBI": 75, "rbi_pa": 0.136, "ctx": 0.928, "adj": 0.146, "rbi600": 87.6, "Salary": 784000, "status": "Pre-Arb", "vs_exp": 18.1}, {"Player": "Javier Sanoja", "Team": "MIA", "Age": 23, "PA": 490, "HR": 11, "RBI": 69, "rbi_pa": 0.141, "ctx": 0.966, "adj": 0.146, "rbi600": 87.5, "Salary": 791500, "status": "Pre-Arb", "vs_exp": 17.9}, {"Player": "Casey Schmitt", "Team": "SFG", "Age": 27, "PA": 409, "HR": 21, "RBI": 55, "rbi_pa": 0.134, "ctx": 0.924, "adj": 0.146, "rbi600": 87.3, "Salary": 810000, "status": "Pre-Arb", "vs_exp": 17.7}, {"Player": "Brandon Lowe", "Team": "PIT", "Age": 31, "PA": 656, "HR": 35, "RBI": 96, "rbi_pa": 0.146, "ctx": 1.006, "adj": 0.146, "rbi600": 87.3, "Salary": 11500000, "status": "Free Agent", "vs_exp": 15.6}, {"Player": "Ty France", "Team": "SDP", "Age": 31, "PA": 500, "HR": 21, "RBI": 72, "rbi_pa": 0.144, "ctx": 0.99, "adj": 0.145, "rbi600": 87.3, "Salary": 1350000, "status": "Arbitration", "vs_exp": 17.3}, {"Player": "Nolan Arenado", "Team": "ARI", "Age": 35, "PA": 599, "HR": 30, "RBI": 86, "rbi_pa": 0.144, "ctx": 0.987, "adj": 0.145, "rbi600": 87.2, "Salary": 27000000, "status": "Free Agent", "vs_exp": 14.8}, {"Player": "Isaac Paredes", "Team": "HOU", "Age": 27, "PA": 659, "HR": 25, "RBI": 94, "rbi_pa": 0.143, "ctx": 0.982, "adj": 0.145, "rbi600": 87.2, "Salary": 9350000, "status": "Free Agent", "vs_exp": 15.6}, {"Player": "Carter Jensen", "Team": "KCR", "Age": 22, "PA": 603, "HR": 27, "RBI": 81, "rbi_pa": 0.134, "ctx": 0.927, "adj": 0.145, "rbi600": 86.9, "Salary": 781150, "status": "Pre-Arb", "vs_exp": 17.3}, {"Player": "Ben Rice", "Team": "NYY", "Age": 27, "PA": 667, "HR": 41, "RBI": 97, "rbi_pa": 0.145, "ctx": 1.01, "adj": 0.144, "rbi600": 86.4, "Salary": 845800, "status": "Pre-Arb", "vs_exp": 16.8}, {"Player": "Cal Raleigh", "Team": "SEA", "Age": 29, "PA": 530, "HR": 23, "RBI": 69, "rbi_pa": 0.13, "ctx": 0.905, "adj": 0.144, "rbi600": 86.4, "Salary": 11000000, "status": "Free Agent", "vs_exp": 14.7}, {"Player": "Alec Bohm", "Team": "PHI", "Age": 29, "PA": 629, "HR": 15, "RBI": 88, "rbi_pa": 0.14, "ctx": 0.978, "adj": 0.143, "rbi600": 85.9, "Salary": 10200000, "status": "Free Agent", "vs_exp": 14.2}, {"Player": "Kyle Schwarber", "Team": "PHI", "Age": 33, "PA": 701, "HR": 45, "RBI": 97, "rbi_pa": 0.138, "ctx": 0.976, "adj": 0.142, "rbi600": 85.1, "Salary": 15000000, "status": "Free Agent", "vs_exp": 13.1}, {"Player": "Andy Pages", "Team": "LAD", "Age": 25, "PA": 574, "HR": 23, "RBI": 85, "rbi_pa": 0.148, "ctx": 1.051, "adj": 0.141, "rbi600": 84.5, "Salary": 800000, "status": "Pre-Arb", "vs_exp": 14.9}, {"Player": "Coby Mayo", "Team": "BAL", "Age": 24, "PA": 454, "HR": 24, "RBI": 63, "rbi_pa": 0.139, "ctx": 0.987, "adj": 0.141, "rbi600": 84.4, "Salary": 790800, "status": "Pre-Arb", "vs_exp": 14.8}, {"Player": "Vinnie Pasquantino", "Team": "KCR", "Age": 28, "PA": 481, "HR": 17, "RBI": 63, "rbi_pa": 0.131, "ctx": 0.935, "adj": 0.14, "rbi600": 84.0, "Salary": 4200000, "status": "Arbitration", "vs_exp": 13.1}, {"Player": "Cole Carrigg", "Team": "COL", "Age": 24, "PA": 372, "HR": 12, "RBI": 53, "rbi_pa": 0.142, "ctx": 1.018, "adj": 0.14, "rbi600": 84.0, "Salary": 780000, "status": "Pre-Arb", "vs_exp": 14.4}, {"Player": "Jonathan Aranda", "Team": "TBR", "Age": 28, "PA": 668, "HR": 22, "RBI": 92, "rbi_pa": 0.138, "ctx": 0.988, "adj": 0.139, "rbi600": 83.6, "Salary": 796400, "status": "Pre-Arb", "vs_exp": 14.0}, {"Player": "Kody Clemens", "Team": "MIN", "Age": 30, "PA": 583, "HR": 27, "RBI": 81, "rbi_pa": 0.139, "ctx": 0.998, "adj": 0.139, "rbi600": 83.5, "Salary": 803900, "status": "Pre-Arb", "vs_exp": 13.9}, {"Player": "Christian Walker", "Team": "HOU", "Age": 35, "PA": 635, "HR": 29, "RBI": 87, "rbi_pa": 0.137, "ctx": 0.989, "adj": 0.139, "rbi600": 83.1, "Salary": 20000000, "status": "Free Agent", "vs_exp": 11.0}, {"Player": "Ildemaro Vargas", "Team": "ARI", "Age": 34, "PA": 486, "HR": 9, "RBI": 67, "rbi_pa": 0.138, "ctx": 0.997, "adj": 0.138, "rbi600": 82.9, "Salary": 1250000, "status": "Arbitration", "vs_exp": 13.0}, {"Player": "Michael Harris II", "Team": "ATL", "Age": 25, "PA": 621, "HR": 26, "RBI": 87, "rbi_pa": 0.14, "ctx": 1.015, "adj": 0.138, "rbi600": 82.8, "Salary": 8000000, "status": "Free Agent", "vs_exp": 11.4}, {"Player": "Jake McCarthy", "Team": "COL", "Age": 28, "PA": 596, "HR": 15, "RBI": 83, "rbi_pa": 0.139, "ctx": 1.011, "adj": 0.138, "rbi600": 82.7, "Salary": 1525000, "status": "Arbitration", "vs_exp": 12.5}, {"Player": "Jake Bauers", "Team": "MIL", "Age": 30, "PA": 578, "HR": 26, "RBI": 86, "rbi_pa": 0.149, "ctx": 1.084, "adj": 0.137, "rbi600": 82.3, "Salary": 2700000, "status": "Arbitration", "vs_exp": 11.8}, {"Player": "Bryce Eldridge", "Team": "SFG", "Age": 21, "PA": 448, "HR": 17, "RBI": 57, "rbi_pa": 0.127, "ctx": 0.927, "adj": 0.137, "rbi600": 82.3, "Salary": 780000, "status": "Pre-Arb", "vs_exp": 12.7}, {"Player": "Heriberto Hernández", "Team": "MIA", "Age": 26, "PA": 505, "HR": 25, "RBI": 67, "rbi_pa": 0.133, "ctx": 0.971, "adj": 0.137, "rbi600": 81.9, "Salary": 788000, "status": "Pre-Arb", "vs_exp": 12.4}, {"Player": "Elly De La Cruz", "Team": "CIN", "Age": 24, "PA": 636, "HR": 30, "RBI": 79, "rbi_pa": 0.124, "ctx": 0.909, "adj": 0.137, "rbi600": 81.9, "Salary": 800000, "status": "Pre-Arb", "vs_exp": 12.3}, {"Player": "Samuel Basallo", "Team": "BAL", "Age": 21, "PA": 399, "HR": 18, "RBI": 54, "rbi_pa": 0.135, "ctx": 0.991, "adj": 0.137, "rbi600": 81.9, "Salary": 1000000, "status": "Arbitration", "vs_exp": 12.2}, {"Player": "Griffin Conine", "Team": "MIA", "Age": 28, "PA": 323, "HR": 19, "RBI": 43, "rbi_pa": 0.133, "ctx": 0.977, "adj": 0.136, "rbi600": 81.7, "Salary": 786000, "status": "Pre-Arb", "vs_exp": 12.1}, {"Player": "Brice Turang", "Team": "MIL", "Age": 26, "PA": 680, "HR": 21, "RBI": 100, "rbi_pa": 0.147, "ctx": 1.082, "adj": 0.136, "rbi600": 81.5, "Salary": 4150000, "status": "Arbitration", "vs_exp": 10.6}, {"Player": "Manny Machado", "Team": "SDP", "Age": 33, "PA": 677, "HR": 30, "RBI": 91, "rbi_pa": 0.134, "ctx": 0.991, "adj": 0.136, "rbi600": 81.4, "Salary": 21000000, "status": "Free Agent", "vs_exp": 9.2}, {"Player": "William Contreras", "Team": "MIL", "Age": 28, "PA": 640, "HR": 18, "RBI": 94, "rbi_pa": 0.147, "ctx": 1.084, "adj": 0.136, "rbi600": 81.3, "Salary": 9400000, "status": "Free Agent", "vs_exp": 9.8}, {"Player": "Pete Crow-Armstrong", "Team": "CHC", "Age": 24, "PA": 726, "HR": 45, "RBI": 107, "rbi_pa": 0.147, "ctx": 1.089, "adj": 0.135, "rbi600": 81.2, "Salary": 894000, "status": "Pre-Arb", "vs_exp": 11.5}, {"Player": "Jonny DeLuca", "Team": "TBR", "Age": 27, "PA": 370, "HR": 11, "RBI": 50, "rbi_pa": 0.135, "ctx": 1.001, "adj": 0.135, "rbi600": 81.0, "Salary": 789300, "status": "Pre-Arb", "vs_exp": 11.4}, {"Player": "Munetaka Murakami", "Team": "CHW", "Age": 26, "PA": 553, "HR": 35, "RBI": 77, "rbi_pa": 0.139, "ctx": 1.04, "adj": 0.134, "rbi600": 80.3, "Salary": 16000000, "status": "Free Agent", "vs_exp": 8.4}, {"Player": "Brayan Rocchio", "Team": "CLE", "Age": 25, "PA": 592, "HR": 15, "RBI": 73, "rbi_pa": 0.123, "ctx": 0.923, "adj": 0.134, "rbi600": 80.2, "Salary": 797600, "status": "Pre-Arb", "vs_exp": 10.6}, {"Player": "Curtis Mead", "Team": "2TM", "Age": 25, "PA": 329, "HR": 17, "RBI": 48, "rbi_pa": 0.146, "ctx": 1.097, "adj": 0.133, "rbi600": 79.8, "Salary": 780000, "status": "Pre-Arb", "vs_exp": 10.2}, {"Player": "Paul Goldschmidt", "Team": "NYY", "Age": 38, "PA": 380, "HR": 18, "RBI": 52, "rbi_pa": 0.137, "ctx": 1.029, "adj": 0.133, "rbi600": 79.8, "Salary": 4000000, "status": "Arbitration", "vs_exp": 8.9}, {"Player": "Salvador Perez", "Team": "KCR", "Age": 36, "PA": 627, "HR": 21, "RBI": 78, "rbi_pa": 0.124, "ctx": 0.936, "adj": 0.133, "rbi600": 79.7, "Salary": 9000000, "status": "Free Agent", "vs_exp": 8.2}, {"Player": "Riley Greene", "Team": "DET", "Age": 25, "PA": 592, "HR": 21, "RBI": 75, "rbi_pa": 0.127, "ctx": 0.963, "adj": 0.132, "rbi600": 79.0, "Salary": 5000000, "status": "Arbitration", "vs_exp": 7.9}, {"Player": "Jackson Merrill", "Team": "SDP", "Age": 23, "PA": 664, "HR": 26, "RBI": 87, "rbi_pa": 0.131, "ctx": 0.995, "adj": 0.132, "rbi600": 79.0, "Salary": 1000000, "status": "Arbitration", "vs_exp": 9.2}, {"Player": "Andruw Monasterio", "Team": "BOS", "Age": 29, "PA": 347, "HR": 6, "RBI": 43, "rbi_pa": 0.124, "ctx": 0.943, "adj": 0.131, "rbi600": 78.9, "Salary": 807500, "status": "Pre-Arb", "vs_exp": 9.3}, {"Player": "Colson Montgomery", "Team": "CHW", "Age": 24, "PA": 638, "HR": 31, "RBI": 87, "rbi_pa": 0.136, "ctx": 1.04, "adj": 0.131, "rbi600": 78.7, "Salary": 798500, "status": "Pre-Arb", "vs_exp": 9.1}, {"Player": "Brooks Lee", "Team": "MIN", "Age": 25, "PA": 631, "HR": 24, "RBI": 83, "rbi_pa": 0.132, "ctx": 1.003, "adj": 0.131, "rbi600": 78.7, "Salary": 793050, "status": "Pre-Arb", "vs_exp": 9.1}, {"Player": "Andrés Giménez", "Team": "TOR", "Age": 27, "PA": 508, "HR": 9, "RBI": 59, "rbi_pa": 0.116, "ctx": 0.888, "adj": 0.131, "rbi600": 78.5, "Salary": 15000000, "status": "Free Agent", "vs_exp": 6.6}, {"Player": "Joc Pederson", "Team": "TEX", "Age": 34, "PA": 432, "HR": 26, "RBI": 53, "rbi_pa": 0.123, "ctx": 0.939, "adj": 0.131, "rbi600": 78.4, "Salary": 18500000, "status": "Free Agent", "vs_exp": 6.3}, {"Player": "Spencer Torkelson", "Team": "DET", "Age": 26, "PA": 612, "HR": 26, "RBI": 77, "rbi_pa": 0.126, "ctx": 0.963, "adj": 0.131, "rbi600": 78.4, "Salary": 4075000, "status": "Arbitration", "vs_exp": 7.5}, {"Player": "Matt Olson", "Team": "ATL", "Age": 32, "PA": 698, "HR": 41, "RBI": 93, "rbi_pa": 0.133, "ctx": 1.02, "adj": 0.131, "rbi600": 78.4, "Salary": 22000000, "status": "Free Agent", "vs_exp": 6.1}, {"Player": "Hao-Yu Lee", "Team": "DET", "Age": 23, "PA": 364, "HR": 10, "RBI": 46, "rbi_pa": 0.126, "ctx": 0.969, "adj": 0.13, "rbi600": 78.3, "Salary": 780000, "status": "Pre-Arb", "vs_exp": 8.7}, {"Player": "Kyle Stowers", "Team": "MIA", "Age": 28, "PA": 512, "HR": 21, "RBI": 65, "rbi_pa": 0.127, "ctx": 0.976, "adj": 0.13, "rbi600": 78.1, "Salary": 804200, "status": "Pre-Arb", "vs_exp": 8.5}, {"Player": "Shea Langeliers", "Team": "ATH", "Age": 28, "PA": 467, "HR": 23, "RBI": 58, "rbi_pa": 0.124, "ctx": 0.956, "adj": 0.13, "rbi600": 78.0, "Salary": 5250000, "status": "Arbitration", "vs_exp": 6.9}, {"Player": "Michael Conforto", "Team": "CHC", "Age": 33, "PA": 314, "HR": 15, "RBI": 45, "rbi_pa": 0.143, "ctx": 1.105, "adj": 0.13, "rbi600": 77.8, "Salary": 2000000, "status": "Arbitration", "vs_exp": 7.5}, {"Player": "Ceddanne Rafaela", "Team": "BOS", "Age": 25, "PA": 576, "HR": 16, "RBI": 70, "rbi_pa": 0.122, "ctx": 0.939, "adj": 0.129, "rbi600": 77.7, "Salary": 2000000, "status": "Arbitration", "vs_exp": 7.4}, {"Player": "Randy Arozarena", "Team": "SEA", "Age": 31, "PA": 670, "HR": 26, "RBI": 79, "rbi_pa": 0.118, "ctx": 0.912, "adj": 0.129, "rbi600": 77.6, "Salary": 15650000, "status": "Free Agent", "vs_exp": 5.6}, {"Player": "Chase DeLauter", "Team": "CLE", "Age": 24, "PA": 559, "HR": 16, "RBI": 67, "rbi_pa": 0.12, "ctx": 0.927, "adj": 0.129, "rbi600": 77.6, "Salary": 780000, "status": "Pre-Arb", "vs_exp": 8.0}, {"Player": "Tyler Soderstrom", "Team": "ATH", "Age": 24, "PA": 453, "HR": 19, "RBI": 56, "rbi_pa": 0.124, "ctx": 0.956, "adj": 0.129, "rbi600": 77.6, "Salary": 1000000, "status": "Arbitration", "vs_exp": 7.8}, {"Player": "Dansby Swanson", "Team": "CHC", "Age": 32, "PA": 486, "HR": 19, "RBI": 69, "rbi_pa": 0.142, "ctx": 1.102, "adj": 0.129, "rbi600": 77.3, "Salary": 27000000, "status": "Free Agent", "vs_exp": 4.9}, {"Player": "Rhys Hoskins", "Team": "CLE", "Age": 33, "PA": 317, "HR": 13, "RBI": 38, "rbi_pa": 0.12, "ctx": 0.932, "adj": 0.129, "rbi600": 77.1, "Salary": 1500000, "status": "Arbitration", "vs_exp": 7.0}, {"Player": "Matt Chapman", "Team": "SFG", "Age": 33, "PA": 352, "HR": 7, "RBI": 42, "rbi_pa": 0.119, "ctx": 0.935, "adj": 0.128, "rbi600": 76.6, "Salary": 25000000, "status": "Free Agent", "vs_exp": 4.2}, {"Player": "Max Muncy", "Team": "LAD", "Age": 35, "PA": 561, "HR": 29, "RBI": 76, "rbi_pa": 0.135, "ctx": 1.063, "adj": 0.127, "rbi600": 76.5, "Salary": 10000000, "status": "Free Agent", "vs_exp": 4.9}, {"Player": "Miguel Vargas", "Team": "CHW", "Age": 26, "PA": 704, "HR": 33, "RBI": 93, "rbi_pa": 0.132, "ctx": 1.043, "adj": 0.127, "rbi600": 76.0, "Salary": 805700, "status": "Pre-Arb", "vs_exp": 6.4}, {"Player": "Bryce Harper", "Team": "PHI", "Age": 33, "PA": 693, "HR": 29, "RBI": 87, "rbi_pa": 0.126, "ctx": 0.991, "adj": 0.127, "rbi600": 76.0, "Salary": 26000000, "status": "Free Agent", "vs_exp": 3.6}, {"Player": "Cody Bellinger", "Team": "NYY", "Age": 30, "PA": 562, "HR": 17, "RBI": 73, "rbi_pa": 0.13, "ctx": 1.029, "adj": 0.126, "rbi600": 75.7, "Salary": 32500000, "status": "Free Agent", "vs_exp": 3.2}, {"Player": "Tyler Stephenson", "Team": "CIN", "Age": 29, "PA": 468, "HR": 15, "RBI": 54, "rbi_pa": 0.115, "ctx": 0.922, "adj": 0.125, "rbi600": 75.1, "Salary": 6800000, "status": "Arbitration", "vs_exp": 3.8}, {"Player": "Drake Baldwin", "Team": "ATL", "Age": 25, "PA": 615, "HR": 25, "RBI": 79, "rbi_pa": 0.128, "ctx": 1.027, "adj": 0.125, "rbi600": 75.0, "Salary": 800000, "status": "Pre-Arb", "vs_exp": 5.4}, {"Player": "Corey Seager", "Team": "TEX", "Age": 32, "PA": 436, "HR": 20, "RBI": 51, "rbi_pa": 0.117, "ctx": 0.942, "adj": 0.124, "rbi600": 74.5, "Salary": 31000000, "status": "Free Agent", "vs_exp": 2.0}, {"Player": "Yainer Diaz", "Team": "HOU", "Age": 27, "PA": 361, "HR": 14, "RBI": 45, "rbi_pa": 0.125, "ctx": 1.006, "adj": 0.124, "rbi600": 74.3, "Salary": 4500000, "status": "Arbitration", "vs_exp": 3.3}, {"Player": "Daylen Lile", "Team": "WSN", "Age": 23, "PA": 655, "HR": 22, "RBI": 89, "rbi_pa": 0.136, "ctx": 1.097, "adj": 0.124, "rbi600": 74.3, "Salary": 786000, "status": "Pre-Arb", "vs_exp": 4.7}, {"Player": "Jesús Sánchez", "Team": "2TM", "Age": 28, "PA": 315, "HR": 8, "RBI": 35, "rbi_pa": 0.111, "ctx": 0.899, "adj": 0.124, "rbi600": 74.2, "Salary": 6800000, "status": "Arbitration", "vs_exp": 2.9}, {"Player": "Yandy Díaz", "Team": "TBR", "Age": 34, "PA": 686, "HR": 22, "RBI": 85, "rbi_pa": 0.124, "ctx": 1.003, "adj": 0.124, "rbi600": 74.1, "Salary": 12000000, "status": "Free Agent", "vs_exp": 2.4}, {"Player": "Brett Baty", "Team": "NYM", "Age": 26, "PA": 473, "HR": 11, "RBI": 56, "rbi_pa": 0.118, "ctx": 0.959, "adj": 0.123, "rbi600": 74.1, "Salary": 811500, "status": "Pre-Arb", "vs_exp": 4.4}, {"Player": "Carson Kelly", "Team": "CHC", "Age": 31, "PA": 425, "HR": 10, "RBI": 58, "rbi_pa": 0.136, "ctx": 1.107, "adj": 0.123, "rbi600": 74.0, "Salary": 5000000, "status": "Arbitration", "vs_exp": 2.9}, {"Player": "Shohei Ohtani", "Team": "LAD", "Age": 31, "PA": 618, "HR": 30, "RBI": 81, "rbi_pa": 0.131, "ctx": 1.066, "adj": 0.123, "rbi600": 73.8, "Salary": 70000000, "status": "Free Agent", "vs_exp": 0.6}, {"Player": "Keibert Ruiz", "Team": "WSN", "Age": 27, "PA": 354, "HR": 10, "RBI": 48, "rbi_pa": 0.136, "ctx": 1.103, "adj": 0.123, "rbi600": 73.8, "Salary": 5000000, "status": "Arbitration", "vs_exp": 2.7}, {"Player": "Seiya Suzuki", "Team": "CHC", "Age": 31, "PA": 634, "HR": 26, "RBI": 86, "rbi_pa": 0.136, "ctx": 1.104, "adj": 0.123, "rbi600": 73.7, "Salary": 18000000, "status": "Free Agent", "vs_exp": 1.7}, {"Player": "Mookie Betts", "Team": "LAD", "Age": 33, "PA": 528, "HR": 23, "RBI": 69, "rbi_pa": 0.131, "ctx": 1.068, "adj": 0.122, "rbi600": 73.4, "Salary": 25000000, "status": "Free Agent", "vs_exp": 1.1}, {"Player": "Teoscar Hernández", "Team": "LAD", "Age": 33, "PA": 491, "HR": 16, "RBI": 64, "rbi_pa": 0.13, "ctx": 1.069, "adj": 0.122, "rbi600": 73.2, "Salary": 12000000, "status": "Free Agent", "vs_exp": 1.4}, {"Player": "Nolan Schanuel", "Team": "LAA", "Age": 24, "PA": 446, "HR": 7, "RBI": 49, "rbi_pa": 0.11, "ctx": 0.905, "adj": 0.121, "rbi600": 72.8, "Salary": 810000, "status": "Pre-Arb", "vs_exp": 3.2}, {"Player": "Zach Neto", "Team": "LAA", "Age": 25, "PA": 704, "HR": 27, "RBI": 77, "rbi_pa": 0.109, "ctx": 0.903, "adj": 0.121, "rbi600": 72.7, "Salary": 4150000, "status": "Arbitration", "vs_exp": 1.8}, {"Player": "Dylan Beavers", "Team": "BAL", "Age": 24, "PA": 363, "HR": 9, "RBI": 44, "rbi_pa": 0.121, "ctx": 1.0, "adj": 0.121, "rbi600": 72.7, "Salary": 787400, "status": "Pre-Arb", "vs_exp": 3.1}, {"Player": "Ketel Marte", "Team": "ARI", "Age": 32, "PA": 624, "HR": 22, "RBI": 76, "rbi_pa": 0.122, "ctx": 1.008, "adj": 0.121, "rbi600": 72.5, "Salary": 15000000, "status": "Free Agent", "vs_exp": 0.6}, {"Player": "Jarren Duran", "Team": "BOS", "Age": 29, "PA": 608, "HR": 20, "RBI": 69, "rbi_pa": 0.113, "ctx": 0.946, "adj": 0.12, "rbi600": 72.0, "Salary": 7700000, "status": "Free Agent", "vs_exp": 0.6}, {"Player": "Alex Bregman", "Team": "CHC", "Age": 32, "PA": 702, "HR": 28, "RBI": 93, "rbi_pa": 0.132, "ctx": 1.106, "adj": 0.12, "rbi600": 71.9, "Salary": 35000000, "status": "Free Agent", "vs_exp": -0.8}, {"Player": "Denzer Guzmán", "Team": "LAA", "Age": 22, "PA": 304, "HR": 8, "RBI": 33, "rbi_pa": 0.109, "ctx": 0.907, "adj": 0.12, "rbi600": 71.8, "Salary": 780000, "status": "Pre-Arb", "vs_exp": 2.2}, {"Player": "Lawrence Butler", "Team": "ATH", "Age": 25, "PA": 539, "HR": 17, "RBI": 62, "rbi_pa": 0.115, "ctx": 0.962, "adj": 0.12, "rbi600": 71.8, "Salary": 3250000, "status": "Arbitration", "vs_exp": 1.0}, {"Player": "Jackson Chourio", "Team": "MIL", "Age": 22, "PA": 573, "HR": 25, "RBI": 75, "rbi_pa": 0.131, "ctx": 1.1, "adj": 0.119, "rbi600": 71.4, "Salary": 7000000, "status": "Free Agent", "vs_exp": 0.0}, {"Player": "Jared Young", "Team": "NYM", "Age": 30, "PA": 342, "HR": 9, "RBI": 39, "rbi_pa": 0.114, "ctx": 0.963, "adj": 0.118, "rbi600": 71.0, "Salary": 1150000, "status": "Arbitration", "vs_exp": 1.1}, {"Player": "Tommy Edman", "Team": "LAD", "Age": 31, "PA": 331, "HR": 8, "RBI": 42, "rbi_pa": 0.127, "ctx": 1.072, "adj": 0.118, "rbi600": 71.0, "Salary": 12250000, "status": "Free Agent", "vs_exp": -0.8}, {"Player": "Tim Tawa", "Team": "ARI", "Age": 27, "PA": 351, "HR": 11, "RBI": 42, "rbi_pa": 0.12, "ctx": 1.012, "adj": 0.118, "rbi600": 70.9, "Salary": 787700, "status": "Pre-Arb", "vs_exp": 1.3}, {"Player": "Wilyer Abreu", "Team": "BOS", "Age": 27, "PA": 681, "HR": 24, "RBI": 76, "rbi_pa": 0.112, "ctx": 0.947, "adj": 0.118, "rbi600": 70.7, "Salary": 810000, "status": "Pre-Arb", "vs_exp": 1.1}, {"Player": "Travis Bazzana", "Team": "CLE", "Age": 23, "PA": 517, "HR": 15, "RBI": 57, "rbi_pa": 0.11, "ctx": 0.936, "adj": 0.118, "rbi600": 70.7, "Salary": 780000, "status": "Pre-Arb", "vs_exp": 1.1}, {"Player": "Jeff McNeil", "Team": "ATH", "Age": 34, "PA": 520, "HR": 9, "RBI": 59, "rbi_pa": 0.113, "ctx": 0.963, "adj": 0.118, "rbi600": 70.7, "Salary": 15750000, "status": "Free Agent", "vs_exp": -1.3}, {"Player": "Andrew Vaughn", "Team": "MIL", "Age": 28, "PA": 331, "HR": 6, "RBI": 43, "rbi_pa": 0.13, "ctx": 1.103, "adj": 0.118, "rbi600": 70.7, "Salary": 7650000, "status": "Free Agent", "vs_exp": -0.7}, {"Player": "Julio Rodríguez", "Team": "SEA", "Age": 25, "PA": 654, "HR": 22, "RBI": 71, "rbi_pa": 0.109, "ctx": 0.922, "adj": 0.118, "rbi600": 70.7, "Salary": 18000000, "status": "Free Agent", "vs_exp": -1.4}, {"Player": "Trent Grisham", "Team": "NYY", "Age": 29, "PA": 484, "HR": 18, "RBI": 59, "rbi_pa": 0.122, "ctx": 1.037, "adj": 0.118, "rbi600": 70.5, "Salary": 22025000, "status": "Free Agent", "vs_exp": -1.7}, {"Player": "Brady House", "Team": "WSN", "Age": 23, "PA": 355, "HR": 10, "RBI": 46, "rbi_pa": 0.13, "ctx": 1.106, "adj": 0.117, "rbi600": 70.3, "Salary": 783200, "status": "Pre-Arb", "vs_exp": 0.7}, {"Player": "Carlos Cortes", "Team": "ATH", "Age": 29, "PA": 381, "HR": 10, "RBI": 43, "rbi_pa": 0.113, "ctx": 0.964, "adj": 0.117, "rbi600": 70.2, "Salary": 780000, "status": "Pre-Arb", "vs_exp": 0.6}, {"Player": "Kyle Manzardo", "Team": "CLE", "Age": 25, "PA": 356, "HR": 13, "RBI": 39, "rbi_pa": 0.11, "ctx": 0.937, "adj": 0.117, "rbi600": 70.1, "Salary": 798300, "status": "Pre-Arb", "vs_exp": 0.5}, {"Player": "Fernando Tatis Jr.", "Team": "SDP", "Age": 27, "PA": 704, "HR": 25, "RBI": 83, "rbi_pa": 0.118, "ctx": 1.009, "adj": 0.117, "rbi600": 70.1, "Salary": 20000000, "status": "Free Agent", "vs_exp": -2.1}, {"Player": "George Springer", "Team": "TOR", "Age": 36, "PA": 517, "HR": 15, "RBI": 54, "rbi_pa": 0.104, "ctx": 0.897, "adj": 0.116, "rbi600": 69.9, "Salary": 22500000, "status": "Free Agent", "vs_exp": -2.4}, {"Player": "Bo Bichette", "Team": "NYM", "Age": 28, "PA": 696, "HR": 18, "RBI": 78, "rbi_pa": 0.112, "ctx": 0.963, "adj": 0.116, "rbi600": 69.8, "Salary": 2000000, "status": "Arbitration", "vs_exp": -0.5}, {"Player": "Michael Massey", "Team": "KCR", "Age": 28, "PA": 452, "HR": 13, "RBI": 50, "rbi_pa": 0.111, "ctx": 0.951, "adj": 0.116, "rbi600": 69.8, "Salary": 1570000, "status": "Arbitration", "vs_exp": -0.4}, {"Player": "Maikel Garcia", "Team": "KCR", "Age": 26, "PA": 344, "HR": 3, "RBI": 38, "rbi_pa": 0.11, "ctx": 0.952, "adj": 0.116, "rbi600": 69.7, "Salary": 4000000, "status": "Arbitration", "vs_exp": -1.2}, {"Player": "Leody Taveras", "Team": "BAL", "Age": 27, "PA": 482, "HR": 8, "RBI": 56, "rbi_pa": 0.116, "ctx": 1.003, "adj": 0.116, "rbi600": 69.5, "Salary": 2000000, "status": "Arbitration", "vs_exp": -0.8}, {"Player": "Caleb Durbin", "Team": "BOS", "Age": 26, "PA": 586, "HR": 13, "RBI": 64, "rbi_pa": 0.109, "ctx": 0.95, "adj": 0.115, "rbi600": 69.0, "Salary": 796000, "status": "Pre-Arb", "vs_exp": -0.6}, {"Player": "Corbin Carroll", "Team": "ARI", "Age": 25, "PA": 671, "HR": 22, "RBI": 78, "rbi_pa": 0.116, "ctx": 1.013, "adj": 0.115, "rbi600": 68.8, "Salary": 10000000, "status": "Free Agent", "vs_exp": -2.8}, {"Player": "Jeremy Peña", "Team": "HOU", "Age": 28, "PA": 483, "HR": 22, "RBI": 56, "rbi_pa": 0.116, "ctx": 1.011, "adj": 0.115, "rbi600": 68.8, "Salary": 9475000, "status": "Free Agent", "vs_exp": -2.7}, {"Player": "JJ Bleday", "Team": "CIN", "Age": 28, "PA": 545, "HR": 24, "RBI": 58, "rbi_pa": 0.106, "ctx": 0.928, "adj": 0.115, "rbi600": 68.8, "Salary": 1400000, "status": "Arbitration", "vs_exp": -1.3}, {"Player": "Patrick Bailey", "Team": "2TM", "Age": 27, "PA": 345, "HR": 10, "RBI": 37, "rbi_pa": 0.107, "ctx": 0.936, "adj": 0.115, "rbi600": 68.7, "Salary": 810000, "status": "Pre-Arb", "vs_exp": -0.9}, {"Player": "Willi Castro", "Team": "COL", "Age": 29, "PA": 477, "HR": 15, "RBI": 56, "rbi_pa": 0.117, "ctx": 1.032, "adj": 0.114, "rbi600": 68.3, "Salary": 5500000, "status": "Arbitration", "vs_exp": -2.9}, {"Player": "Mauricio Dubón", "Team": "ATL", "Age": 31, "PA": 619, "HR": 12, "RBI": 73, "rbi_pa": 0.118, "ctx": 1.038, "adj": 0.114, "rbi600": 68.2, "Salary": 6100000, "status": "Arbitration", "vs_exp": -3.0}, {"Player": "Jacob Wilson", "Team": "ATH", "Age": 24, "PA": 337, "HR": 7, "RBI": 37, "rbi_pa": 0.11, "ctx": 0.966, "adj": 0.114, "rbi600": 68.2, "Salary": 1000000, "status": "Arbitration", "vs_exp": -1.6}, {"Player": "Gavin Sheets", "Team": "SDP", "Age": 30, "PA": 419, "HR": 17, "RBI": 48, "rbi_pa": 0.115, "ctx": 1.013, "adj": 0.113, "rbi600": 67.8, "Salary": 4500000, "status": "Arbitration", "vs_exp": -3.1}, {"Player": "Ronald Acuña Jr.", "Team": "ATL", "Age": 28, "PA": 469, "HR": 20, "RBI": 55, "rbi_pa": 0.117, "ctx": 1.038, "adj": 0.113, "rbi600": 67.8, "Salary": 17000000, "status": "Free Agent", "vs_exp": -4.3}, {"Player": "Victor Caratini", "Team": "MIN", "Age": 32, "PA": 382, "HR": 7, "RBI": 44, "rbi_pa": 0.115, "ctx": 1.02, "adj": 0.113, "rbi600": 67.8, "Salary": 4000000, "status": "Arbitration", "vs_exp": -3.1}, {"Player": "Jonah Heim", "Team": "2TM", "Age": 31, "PA": 390, "HR": 13, "RBI": 43, "rbi_pa": 0.11, "ctx": 0.978, "adj": 0.113, "rbi600": 67.6, "Salary": 1250000, "status": "Arbitration", "vs_exp": -2.3}, {"Player": "Spencer Steer", "Team": "CIN", "Age": 28, "PA": 384, "HR": 16, "RBI": 40, "rbi_pa": 0.104, "ctx": 0.93, "adj": 0.112, "rbi600": 67.2, "Salary": 4000000, "status": "Arbitration", "vs_exp": -3.7}, {"Player": "TJ Rumfield", "Team": "COL", "Age": 26, "PA": 631, "HR": 16, "RBI": 73, "rbi_pa": 0.116, "ctx": 1.033, "adj": 0.112, "rbi600": 67.2, "Salary": 780000, "status": "Pre-Arb", "vs_exp": -2.4}, {"Player": "Cole Young", "Team": "SEA", "Age": 22, "PA": 638, "HR": 17, "RBI": 66, "rbi_pa": 0.103, "ctx": 0.927, "adj": 0.112, "rbi600": 66.9, "Salary": 786100, "status": "Pre-Arb", "vs_exp": -2.7}, {"Player": "James Wood", "Team": "WSN", "Age": 23, "PA": 623, "HR": 30, "RBI": 77, "rbi_pa": 0.124, "ctx": 1.11, "adj": 0.111, "rbi600": 66.8, "Salary": 806900, "status": "Pre-Arb", "vs_exp": -2.8}, {"Player": "Lane Thomas", "Team": "2TM", "Age": 30, "PA": 374, "HR": 11, "RBI": 40, "rbi_pa": 0.107, "ctx": 0.962, "adj": 0.111, "rbi600": 66.7, "Salary": 5250000, "status": "Arbitration", "vs_exp": -4.4}, {"Player": "Nick Loftin", "Team": "KCR", "Age": 27, "PA": 426, "HR": 8, "RBI": 45, "rbi_pa": 0.106, "ctx": 0.954, "adj": 0.111, "rbi600": 66.4, "Salary": 786750, "status": "Pre-Arb", "vs_exp": -3.2}, {"Player": "Garrett Mitchell", "Team": "MIL", "Age": 27, "PA": 531, "HR": 11, "RBI": 65, "rbi_pa": 0.122, "ctx": 1.108, "adj": 0.111, "rbi600": 66.3, "Salary": 950000, "status": "Pre-Arb", "vs_exp": -3.4}, {"Player": "José Fermín", "Team": "STL", "Age": 27, "PA": 370, "HR": 6, "RBI": 41, "rbi_pa": 0.111, "ctx": 1.003, "adj": 0.11, "rbi600": 66.3, "Salary": 792350, "status": "Pre-Arb", "vs_exp": -3.3}, {"Player": "Byron Buxton", "Team": "MIN", "Age": 32, "PA": 408, "HR": 25, "RBI": 46, "rbi_pa": 0.113, "ctx": 1.021, "adj": 0.11, "rbi600": 66.2, "Salary": 15000000, "status": "Free Agent", "vs_exp": -5.7}, {"Player": "Austin Riley", "Team": "ATL", "Age": 29, "PA": 630, "HR": 19, "RBI": 72, "rbi_pa": 0.114, "ctx": 1.041, "adj": 0.11, "rbi600": 65.9, "Salary": 22000000, "status": "Free Agent", "vs_exp": -6.4}, {"Player": "Royce Lewis", "Team": "MIN", "Age": 27, "PA": 509, "HR": 15, "RBI": 57, "rbi_pa": 0.112, "ctx": 1.022, "adj": 0.11, "rbi600": 65.7, "Salary": 2850000, "status": "Arbitration", "vs_exp": -4.9}, {"Player": "Bryson Stott", "Team": "PHI", "Age": 28, "PA": 608, "HR": 10, "RBI": 67, "rbi_pa": 0.11, "ctx": 1.008, "adj": 0.109, "rbi600": 65.6, "Salary": 5900000, "status": "Arbitration", "vs_exp": -5.6}, {"Player": "Ryan McMahon", "Team": "NYY", "Age": 31, "PA": 360, "HR": 11, "RBI": 41, "rbi_pa": 0.114, "ctx": 1.042, "adj": 0.109, "rbi600": 65.5, "Salary": 16000000, "status": "Free Agent", "vs_exp": -6.4}, {"Player": "Nolan Gorman", "Team": "STL", "Age": 26, "PA": 302, "HR": 9, "RBI": 33, "rbi_pa": 0.109, "ctx": 1.003, "adj": 0.109, "rbi600": 65.3, "Salary": 2655000, "status": "Arbitration", "vs_exp": -5.2}, {"Player": "Trevor Larnach", "Team": "MIN", "Age": 29, "PA": 433, "HR": 13, "RBI": 48, "rbi_pa": 0.111, "ctx": 1.023, "adj": 0.108, "rbi600": 65.0, "Salary": 4475000, "status": "Arbitration", "vs_exp": -5.9}, {"Player": "J.T. Realmuto", "Team": "PHI", "Age": 35, "PA": 467, "HR": 11, "RBI": 51, "rbi_pa": 0.109, "ctx": 1.008, "adj": 0.108, "rbi600": 65.0, "Salary": 15000000, "status": "Free Agent", "vs_exp": -6.9}, {"Player": "Brandon Marsh", "Team": "PHI", "Age": 28, "PA": 568, "HR": 18, "RBI": 62, "rbi_pa": 0.109, "ctx": 1.009, "adj": 0.108, "rbi600": 64.9, "Salary": 5200000, "status": "Arbitration", "vs_exp": -6.2}, {"Player": "Francisco Lindor", "Team": "NYM", "Age": 32, "PA": 469, "HR": 21, "RBI": 49, "rbi_pa": 0.104, "ctx": 0.97, "adj": 0.108, "rbi600": 64.7, "Salary": 32000000, "status": "Free Agent", "vs_exp": -7.9}, {"Player": "Troy Johnston", "Team": "COL", "Age": 29, "PA": 449, "HR": 4, "RBI": 50, "rbi_pa": 0.111, "ctx": 1.036, "adj": 0.107, "rbi600": 64.5, "Salary": 782000, "status": "Pre-Arb", "vs_exp": -5.1}, {"Player": "Tristan Peters", "Team": "CHW", "Age": 26, "PA": 491, "HR": 12, "RBI": 56, "rbi_pa": 0.114, "ctx": 1.061, "adj": 0.107, "rbi600": 64.5, "Salary": 780350, "status": "Pre-Arb", "vs_exp": -5.1}, {"Player": "José Caballero", "Team": "NYY", "Age": 29, "PA": 456, "HR": 14, "RBI": 51, "rbi_pa": 0.112, "ctx": 1.045, "adj": 0.107, "rbi600": 64.2, "Salary": 2000000, "status": "Arbitration", "vs_exp": -6.1}, {"Player": "Heliot Ramos", "Team": "2TM", "Age": 26, "PA": 442, "HR": 13, "RBI": 46, "rbi_pa": 0.104, "ctx": 0.973, "adj": 0.107, "rbi600": 64.2, "Salary": 810000, "status": "Pre-Arb", "vs_exp": -5.4}, {"Player": "Willy Adames", "Team": "SFG", "Age": 30, "PA": 505, "HR": 21, "RBI": 51, "rbi_pa": 0.101, "ctx": 0.946, "adj": 0.107, "rbi600": 64.0, "Salary": 10000000, "status": "Free Agent", "vs_exp": -7.6}, {"Player": "Nick Fortes", "Team": "TBR", "Age": 29, "PA": 323, "HR": 6, "RBI": 35, "rbi_pa": 0.108, "ctx": 1.016, "adj": 0.107, "rbi600": 64.0, "Salary": 2535000, "status": "Arbitration", "vs_exp": -6.5}, {"Player": "Christian Yelich", "Team": "MIL", "Age": 34, "PA": 500, "HR": 12, "RBI": 59, "rbi_pa": 0.118, "ctx": 1.111, "adj": 0.106, "rbi600": 63.7, "Salary": 26000000, "status": "Free Agent", "vs_exp": -8.6}, {"Player": "Nathan Church", "Team": "STL", "Age": 25, "PA": 470, "HR": 10, "RBI": 50, "rbi_pa": 0.106, "ctx": 1.007, "adj": 0.106, "rbi600": 63.4, "Salary": 782150, "status": "Pre-Arb", "vs_exp": -6.2}, {"Player": "Francisco Alvarez", "Team": "NYM", "Age": 24, "PA": 420, "HR": 16, "RBI": 43, "rbi_pa": 0.102, "ctx": 0.97, "adj": 0.105, "rbi600": 63.3, "Salary": 2400000, "status": "Arbitration", "vs_exp": -7.2}, {"Player": "Masyn Winn", "Team": "STL", "Age": 24, "PA": 532, "HR": 5, "RBI": 56, "rbi_pa": 0.105, "ctx": 1.008, "adj": 0.104, "rbi600": 62.6, "Salary": 799450, "status": "Pre-Arb", "vs_exp": -7.0}, {"Player": "Spencer Horwitz", "Team": "PIT", "Age": 28, "PA": 451, "HR": 10, "RBI": 49, "rbi_pa": 0.109, "ctx": 1.042, "adj": 0.104, "rbi600": 62.6, "Salary": 802000, "status": "Pre-Arb", "vs_exp": -7.0}, {"Player": "Jung Hoo Lee", "Team": "SFG", "Age": 27, "PA": 579, "HR": 10, "RBI": 57, "rbi_pa": 0.098, "ctx": 0.949, "adj": 0.104, "rbi600": 62.2, "Salary": 22000000, "status": "Free Agent", "vs_exp": -10.0}, {"Player": "Otto Lopez", "Team": "MIA", "Age": 27, "PA": 687, "HR": 11, "RBI": 71, "rbi_pa": 0.103, "ctx": 0.997, "adj": 0.104, "rbi600": 62.2, "Salary": 810500, "status": "Pre-Arb", "vs_exp": -7.4}, {"Player": "Vladimir Guerrero Jr.", "Team": "TOR", "Age": 27, "PA": 609, "HR": 9, "RBI": 57, "rbi_pa": 0.094, "ctx": 0.907, "adj": 0.103, "rbi600": 61.9, "Salary": 17000000, "status": "Free Agent", "vs_exp": -10.1}, {"Player": "Kevin McGonigle", "Team": "DET", "Age": 21, "PA": 707, "HR": 18, "RBI": 72, "rbi_pa": 0.102, "ctx": 0.988, "adj": 0.103, "rbi600": 61.9, "Salary": 780000, "status": "Pre-Arb", "vs_exp": -7.7}, {"Player": "José Ramírez", "Team": "CLE", "Age": 33, "PA": 544, "HR": 12, "RBI": 53, "rbi_pa": 0.097, "ctx": 0.947, "adj": 0.103, "rbi600": 61.8, "Salary": 25000000, "status": "Free Agent", "vs_exp": -10.6}, {"Player": "Kyle Tucker", "Team": "LAD", "Age": 29, "PA": 627, "HR": 17, "RBI": 70, "rbi_pa": 0.112, "ctx": 1.085, "adj": 0.103, "rbi600": 61.7, "Salary": 1000000, "status": "Arbitration", "vs_exp": -8.0}, {"Player": "Ozzie Albies", "Team": "ATL", "Age": 29, "PA": 683, "HR": 22, "RBI": 73, "rbi_pa": 0.107, "ctx": 1.05, "adj": 0.102, "rbi600": 61.1, "Salary": 7000000, "status": "Free Agent", "vs_exp": -10.2}, {"Player": "Carson Benge", "Team": "NYM", "Age": 23, "PA": 654, "HR": 20, "RBI": 65, "rbi_pa": 0.099, "ctx": 0.976, "adj": 0.102, "rbi600": 61.1, "Salary": 780000, "status": "Pre-Arb", "vs_exp": -8.5}, {"Player": "Joey Ortiz", "Team": "MIL", "Age": 27, "PA": 415, "HR": 9, "RBI": 47, "rbi_pa": 0.113, "ctx": 1.113, "adj": 0.102, "rbi600": 61.1, "Salary": 790400, "status": "Pre-Arb", "vs_exp": -8.5}, {"Player": "Luis Arraez", "Team": "2TM", "Age": 29, "PA": 655, "HR": 6, "RBI": 64, "rbi_pa": 0.098, "ctx": 0.968, "adj": 0.101, "rbi600": 60.6, "Salary": 12000000, "status": "Free Agent", "vs_exp": -11.2}, {"Player": "Colton Cowser", "Team": "BAL", "Age": 26, "PA": 392, "HR": 13, "RBI": 40, "rbi_pa": 0.102, "ctx": 1.012, "adj": 0.101, "rbi600": 60.5, "Salary": 801500, "status": "Pre-Arb", "vs_exp": -9.1}, {"Player": "Nathan Lukes", "Team": "TOR", "Age": 31, "PA": 450, "HR": 10, "RBI": 41, "rbi_pa": 0.091, "ctx": 0.907, "adj": 0.1, "rbi600": 60.3, "Salary": 808500, "status": "Pre-Arb", "vs_exp": -9.3}, {"Player": "Kyle Karros", "Team": "COL", "Age": 23, "PA": 475, "HR": 13, "RBI": 49, "rbi_pa": 0.103, "ctx": 1.042, "adj": 0.099, "rbi600": 59.4, "Salary": 782000, "status": "Pre-Arb", "vs_exp": -10.2}, {"Player": "Josh Jung", "Team": "TEX", "Age": 28, "PA": 444, "HR": 12, "RBI": 42, "rbi_pa": 0.095, "ctx": 0.958, "adj": 0.099, "rbi600": 59.2, "Salary": 2900000, "status": "Arbitration", "vs_exp": -11.4}, {"Player": "Brandon Nimmo", "Team": "TEX", "Age": 33, "PA": 655, "HR": 14, "RBI": 62, "rbi_pa": 0.095, "ctx": 0.963, "adj": 0.098, "rbi600": 59.0, "Salary": 20250000, "status": "Free Agent", "vs_exp": -13.2}, {"Player": "Jazz Chisholm Jr.", "Team": "NYY", "Age": 28, "PA": 532, "HR": 19, "RBI": 55, "rbi_pa": 0.103, "ctx": 1.053, "adj": 0.098, "rbi600": 58.9, "Salary": 10200000, "status": "Free Agent", "vs_exp": -12.7}, {"Player": "Moisés Ballesteros", "Team": "2TM", "Age": 22, "PA": 352, "HR": 9, "RBI": 35, "rbi_pa": 0.099, "ctx": 1.015, "adj": 0.098, "rbi600": 58.8, "Salary": 787500, "status": "Pre-Arb", "vs_exp": -10.8}, {"Player": "Bryan Reynolds", "Team": "PIT", "Age": 31, "PA": 699, "HR": 17, "RBI": 72, "rbi_pa": 0.103, "ctx": 1.052, "adj": 0.098, "rbi600": 58.8, "Salary": 14000000, "status": "Free Agent", "vs_exp": -13.1}, {"Player": "Braden Montgomery", "Team": "CHW", "Age": 23, "PA": 365, "HR": 6, "RBI": 38, "rbi_pa": 0.104, "ctx": 1.066, "adj": 0.098, "rbi600": 58.6, "Salary": 780000, "status": "Pre-Arb", "vs_exp": -11.0}, {"Player": "Lars Nootbaar", "Team": "2TM", "Age": 28, "PA": 334, "HR": 8, "RBI": 33, "rbi_pa": 0.099, "ctx": 1.012, "adj": 0.098, "rbi600": 58.6, "Salary": 5250000, "status": "Arbitration", "vs_exp": -12.5}, {"Player": "Freddie Freeman", "Team": "LAD", "Age": 36, "PA": 657, "HR": 16, "RBI": 70, "rbi_pa": 0.107, "ctx": 1.091, "adj": 0.098, "rbi600": 58.6, "Salary": 27000000, "status": "Free Agent", "vs_exp": -13.8}, {"Player": "Wyatt Langford", "Team": "TEX", "Age": 24, "PA": 471, "HR": 17, "RBI": 44, "rbi_pa": 0.093, "ctx": 0.959, "adj": 0.097, "rbi600": 58.4, "Salary": 805000, "status": "Pre-Arb", "vs_exp": -11.2}, {"Player": "Cam Smith", "Team": "HOU", "Age": 23, "PA": 568, "HR": 21, "RBI": 56, "rbi_pa": 0.099, "ctx": 1.026, "adj": 0.096, "rbi600": 57.6, "Salary": 809900, "status": "Pre-Arb", "vs_exp": -12.0}, {"Player": "Mike Yastrzemski", "Team": "ATL", "Age": 35, "PA": 408, "HR": 12, "RBI": 41, "rbi_pa": 0.1, "ctx": 1.049, "adj": 0.096, "rbi600": 57.5, "Salary": 9000000, "status": "Free Agent", "vs_exp": -14.0}, {"Player": "Michael Busch", "Team": "CHC", "Age": 28, "PA": 710, "HR": 20, "RBI": 77, "rbi_pa": 0.108, "ctx": 1.133, "adj": 0.096, "rbi600": 57.5, "Salary": 860000, "status": "Pre-Arb", "vs_exp": -12.2}, {"Player": "Nick Gonzales", "Team": "PIT", "Age": 27, "PA": 608, "HR": 6, "RBI": 61, "rbi_pa": 0.1, "ctx": 1.052, "adj": 0.095, "rbi600": 57.2, "Salary": 801600, "status": "Pre-Arb", "vs_exp": -12.4}, {"Player": "Luis Rengifo", "Team": "2TM", "Age": 29, "PA": 354, "HR": 4, "RBI": 36, "rbi_pa": 0.102, "ctx": 1.074, "adj": 0.095, "rbi600": 56.8, "Salary": 2000000, "status": "Arbitration", "vs_exp": -13.5}, {"Player": "Jacob Young", "Team": "WSN", "Age": 26, "PA": 471, "HR": 10, "RBI": 50, "rbi_pa": 0.106, "ctx": 1.122, "adj": 0.095, "rbi600": 56.8, "Salary": 794200, "status": "Pre-Arb", "vs_exp": -12.9}, {"Player": "Ian Happ", "Team": "CHC", "Age": 31, "PA": 636, "HR": 24, "RBI": 68, "rbi_pa": 0.107, "ctx": 1.132, "adj": 0.094, "rbi600": 56.7, "Salary": 18000000, "status": "Free Agent", "vs_exp": -15.4}, {"Player": "Iván Herrera", "Team": "STL", "Age": 26, "PA": 717, "HR": 19, "RBI": 69, "rbi_pa": 0.096, "ctx": 1.022, "adj": 0.094, "rbi600": 56.5, "Salary": 798800, "status": "Pre-Arb", "vs_exp": -13.1}, {"Player": "Jake Cronenworth", "Team": "SDP", "Age": 32, "PA": 425, "HR": 7, "RBI": 41, "rbi_pa": 0.096, "ctx": 1.025, "adj": 0.094, "rbi600": 56.5, "Salary": 12000000, "status": "Free Agent", "vs_exp": -15.3}, {"Player": "Sal Frelick", "Team": "MIL", "Age": 26, "PA": 384, "HR": 4, "RBI": 40, "rbi_pa": 0.104, "ctx": 1.117, "adj": 0.093, "rbi600": 55.9, "Salary": 800600, "status": "Pre-Arb", "vs_exp": -13.7}, {"Player": "Konnor Griffin", "Team": "PIT", "Age": 20, "PA": 339, "HR": 6, "RBI": 33, "rbi_pa": 0.097, "ctx": 1.046, "adj": 0.093, "rbi600": 55.8, "Salary": 1000000, "status": "Arbitration", "vs_exp": -13.9}, {"Player": "Cedric Mullins", "Team": "TBR", "Age": 31, "PA": 502, "HR": 15, "RBI": 48, "rbi_pa": 0.096, "ctx": 1.028, "adj": 0.093, "rbi600": 55.8, "Salary": 6500000, "status": "Arbitration", "vs_exp": -15.5}, {"Player": "Josh Naylor", "Team": "SEA", "Age": 29, "PA": 650, "HR": 10, "RBI": 57, "rbi_pa": 0.088, "ctx": 0.944, "adj": 0.093, "rbi600": 55.7, "Salary": 10000000, "status": "Free Agent", "vs_exp": -15.9}, {"Player": "Nico Hoerner", "Team": "CHC", "Age": 29, "PA": 689, "HR": 8, "RBI": 72, "rbi_pa": 0.104, "ctx": 1.136, "adj": 0.092, "rbi600": 55.2, "Salary": 12000000, "status": "Free Agent", "vs_exp": -16.6}, {"Player": "Josh Lowe", "Team": "LAA", "Age": 28, "PA": 343, "HR": 12, "RBI": 29, "rbi_pa": 0.085, "ctx": 0.92, "adj": 0.092, "rbi600": 55.2, "Salary": 2600000, "status": "Arbitration", "vs_exp": -15.4}, {"Player": "Mike Trout", "Team": "LAA", "Age": 34, "PA": 634, "HR": 22, "RBI": 54, "rbi_pa": 0.085, "ctx": 0.928, "adj": 0.092, "rbi600": 55.1, "Salary": 35450000, "status": "Free Agent", "vs_exp": -17.6}, {"Player": "Gleyber Torres", "Team": "DET", "Age": 29, "PA": 420, "HR": 8, "RBI": 38, "rbi_pa": 0.09, "ctx": 0.991, "adj": 0.091, "rbi600": 54.8, "Salary": 22025000, "status": "Free Agent", "vs_exp": -17.4}, {"Player": "Evan Carter", "Team": "TEX", "Age": 23, "PA": 455, "HR": 9, "RBI": 40, "rbi_pa": 0.088, "ctx": 0.963, "adj": 0.091, "rbi600": 54.8, "Salary": 791500, "status": "Pre-Arb", "vs_exp": -14.8}, {"Player": "Marcus Semien", "Team": "NYM", "Age": 35, "PA": 547, "HR": 15, "RBI": 49, "rbi_pa": 0.09, "ctx": 0.983, "adj": 0.091, "rbi600": 54.7, "Salary": 26000000, "status": "Free Agent", "vs_exp": -17.7}, {"Player": "Xander Bogaerts", "Team": "SDP", "Age": 33, "PA": 606, "HR": 13, "RBI": 57, "rbi_pa": 0.094, "ctx": 1.033, "adj": 0.091, "rbi600": 54.6, "Salary": 25000000, "status": "Free Agent", "vs_exp": -17.7}, {"Player": "Chase Meidroth", "Team": "CHW", "Age": 24, "PA": 643, "HR": 16, "RBI": 63, "rbi_pa": 0.098, "ctx": 1.079, "adj": 0.091, "rbi600": 54.5, "Salary": 789100, "status": "Pre-Arb", "vs_exp": -15.1}, {"Player": "A.J. Ewing", "Team": "NYM", "Age": 21, "PA": 492, "HR": 11, "RBI": 43, "rbi_pa": 0.087, "ctx": 0.983, "adj": 0.089, "rbi600": 53.4, "Salary": 780000, "status": "Pre-Arb", "vs_exp": -16.2}, {"Player": "Bobby Witt Jr.", "Team": "KCR", "Age": 26, "PA": 632, "HR": 18, "RBI": 54, "rbi_pa": 0.085, "ctx": 0.976, "adj": 0.088, "rbi600": 52.5, "Salary": 13000000, "status": "Free Agent", "vs_exp": -19.3}, {"Player": "Connor Norby", "Team": "2TM", "Age": 26, "PA": 383, "HR": 7, "RBI": 34, "rbi_pa": 0.089, "ctx": 1.014, "adj": 0.088, "rbi600": 52.5, "Salary": 794000, "status": "Pre-Arb", "vs_exp": -17.1}, {"Player": "Wade Meckler", "Team": "LAA", "Age": 26, "PA": 337, "HR": 3, "RBI": 27, "rbi_pa": 0.08, "ctx": 0.922, "adj": 0.087, "rbi600": 52.2, "Salary": 780000, "status": "Pre-Arb", "vs_exp": -17.4}, {"Player": "J.P. Crawford", "Team": "SEA", "Age": 31, "PA": 489, "HR": 14, "RBI": 40, "rbi_pa": 0.082, "ctx": 0.944, "adj": 0.087, "rbi600": 52.0, "Salary": 11000000, "status": "Free Agent", "vs_exp": -19.7}, {"Player": "Myles Straw", "Team": "TOR", "Age": 31, "PA": 330, "HR": 3, "RBI": 26, "rbi_pa": 0.079, "ctx": 0.911, "adj": 0.086, "rbi600": 51.9, "Salary": 7000000, "status": "Free Agent", "vs_exp": -19.4}, {"Player": "Xavier Edwards", "Team": "MIA", "Age": 26, "PA": 595, "HR": 6, "RBI": 52, "rbi_pa": 0.087, "ctx": 1.011, "adj": 0.086, "rbi600": 51.9, "Salary": 804000, "status": "Pre-Arb", "vs_exp": -17.8}, {"Player": "Justin Crawford", "Team": "PHI", "Age": 22, "PA": 465, "HR": 3, "RBI": 41, "rbi_pa": 0.088, "ctx": 1.023, "adj": 0.086, "rbi600": 51.7, "Salary": 780000, "status": "Pre-Arb", "vs_exp": -17.9}, {"Player": "Dane Myers", "Team": "CIN", "Age": 30, "PA": 334, "HR": 8, "RBI": 27, "rbi_pa": 0.081, "ctx": 0.942, "adj": 0.086, "rbi600": 51.5, "Salary": 800000, "status": "Pre-Arb", "vs_exp": -18.1}, {"Player": "Colt Keith", "Team": "DET", "Age": 24, "PA": 423, "HR": 10, "RBI": 36, "rbi_pa": 0.085, "ctx": 0.994, "adj": 0.086, "rbi600": 51.4, "Salary": 4000000, "status": "Arbitration", "vs_exp": -19.5}, {"Player": "Matt McLain", "Team": "CIN", "Age": 26, "PA": 496, "HR": 15, "RBI": 40, "rbi_pa": 0.081, "ctx": 0.949, "adj": 0.085, "rbi600": 51.0, "Salary": 2300000, "status": "Arbitration", "vs_exp": -19.4}, {"Player": "Jose Altuve", "Team": "HOU", "Age": 36, "PA": 573, "HR": 16, "RBI": 50, "rbi_pa": 0.087, "ctx": 1.037, "adj": 0.084, "rbi600": 50.5, "Salary": 30000000, "status": "Free Agent", "vs_exp": -22.0}, {"Player": "Ernie Clement", "Team": "TOR", "Age": 30, "PA": 621, "HR": 9, "RBI": 48, "rbi_pa": 0.077, "ctx": 0.924, "adj": 0.084, "rbi600": 50.2, "Salary": 4600000, "status": "Arbitration", "vs_exp": -20.8}, {"Player": "Jackson Holliday", "Team": "BAL", "Age": 22, "PA": 354, "HR": 7, "RBI": 30, "rbi_pa": 0.085, "ctx": 1.02, "adj": 0.083, "rbi600": 49.8, "Salary": 802200, "status": "Pre-Arb", "vs_exp": -19.8}, {"Player": "Geraldo Perdomo", "Team": "ARI", "Age": 26, "PA": 680, "HR": 9, "RBI": 59, "rbi_pa": 0.087, "ctx": 1.046, "adj": 0.083, "rbi600": 49.8, "Salary": 5000000, "status": "Arbitration", "vs_exp": -21.3}, {"Player": "Ezequiel Tovar", "Team": "COL", "Age": 24, "PA": 506, "HR": 13, "RBI": 44, "rbi_pa": 0.087, "ctx": 1.056, "adj": 0.082, "rbi600": 49.4, "Salary": 5000000, "status": "Arbitration", "vs_exp": -21.6}, {"Player": "Henry Bolte", "Team": "ATH", "Age": 22, "PA": 473, "HR": 11, "RBI": 38, "rbi_pa": 0.08, "ctx": 0.988, "adj": 0.081, "rbi600": 48.8, "Salary": 780000, "status": "Pre-Arb", "vs_exp": -20.8}, {"Player": "Gunnar Henderson", "Team": "BAL", "Age": 25, "PA": 702, "HR": 24, "RBI": 59, "rbi_pa": 0.084, "ctx": 1.039, "adj": 0.081, "rbi600": 48.6, "Salary": 8500000, "status": "Free Agent", "vs_exp": -22.9}, {"Player": "Taylor Walls", "Team": "TBR", "Age": 29, "PA": 433, "HR": 2, "RBI": 36, "rbi_pa": 0.083, "ctx": 1.034, "adj": 0.08, "rbi600": 48.2, "Salary": 2450000, "status": "Arbitration", "vs_exp": -22.3}, {"Player": "Daulton Varsho", "Team": "2TM", "Age": 29, "PA": 526, "HR": 12, "RBI": 40, "rbi_pa": 0.076, "ctx": 0.948, "adj": 0.08, "rbi600": 48.1, "Salary": 10750000, "status": "Free Agent", "vs_exp": -23.5}, {"Player": "JJ Wetherholt", "Team": "STL", "Age": 23, "PA": 619, "HR": 17, "RBI": 51, "rbi_pa": 0.082, "ctx": 1.032, "adj": 0.08, "rbi600": 47.9, "Salary": 780000, "status": "Pre-Arb", "vs_exp": -21.7}, {"Player": "Luke Keaschall", "Team": "MIN", "Age": 23, "PA": 620, "HR": 10, "RBI": 52, "rbi_pa": 0.084, "ctx": 1.051, "adj": 0.08, "rbi600": 47.9, "Salary": 788200, "status": "Pre-Arb", "vs_exp": -21.7}, {"Player": "Trea Turner", "Team": "PHI", "Age": 33, "PA": 700, "HR": 19, "RBI": 58, "rbi_pa": 0.083, "ctx": 1.04, "adj": 0.08, "rbi600": 47.8, "Salary": 27272727, "status": "Free Agent", "vs_exp": -24.6}, {"Player": "Sam Antonacci", "Team": "CHW", "Age": 23, "PA": 557, "HR": 8, "RBI": 48, "rbi_pa": 0.086, "ctx": 1.086, "adj": 0.079, "rbi600": 47.6, "Salary": 780000, "status": "Pre-Arb", "vs_exp": -22.0}, {"Player": "Isaac Collins", "Team": "KCR", "Age": 28, "PA": 519, "HR": 6, "RBI": 40, "rbi_pa": 0.077, "ctx": 0.978, "adj": 0.079, "rbi600": 47.3, "Salary": 799750, "status": "Pre-Arb", "vs_exp": -22.3}, {"Player": "Austin Wells", "Team": "NYY", "Age": 26, "PA": 388, "HR": 14, "RBI": 32, "rbi_pa": 0.082, "ctx": 1.062, "adj": 0.078, "rbi600": 46.6, "Salary": 866200, "status": "Pre-Arb", "vs_exp": -23.1}, {"Player": "Kyle Isbel", "Team": "KCR", "Age": 29, "PA": 323, "HR": 6, "RBI": 24, "rbi_pa": 0.074, "ctx": 0.97, "adj": 0.077, "rbi600": 46.0, "Salary": 2700000, "status": "Arbitration", "vs_exp": -24.6}, {"Player": "Jared Triolo", "Team": "PIT", "Age": 28, "PA": 362, "HR": 3, "RBI": 29, "rbi_pa": 0.08, "ctx": 1.056, "adj": 0.076, "rbi600": 45.5, "Salary": 818900, "status": "Pre-Arb", "vs_exp": -24.1}, {"Player": "Jorbit Vivas", "Team": "WSN", "Age": 25, "PA": 364, "HR": 3, "RBI": 31, "rbi_pa": 0.085, "ctx": 1.131, "adj": 0.075, "rbi600": 45.2, "Salary": 790600, "status": "Pre-Arb", "vs_exp": -24.4}, {"Player": "Oswald Peraza", "Team": "LAA", "Age": 26, "PA": 370, "HR": 7, "RBI": 25, "rbi_pa": 0.068, "ctx": 0.93, "adj": 0.073, "rbi600": 43.6, "Salary": 810000, "status": "Pre-Arb", "vs_exp": -26.0}, {"Player": "Nasim Nuñez", "Team": "WSN", "Age": 25, "PA": 493, "HR": 1, "RBI": 37, "rbi_pa": 0.075, "ctx": 1.147, "adj": 0.065, "rbi600": 39.3, "Salary": 783100, "status": "Pre-Arb", "vs_exp": -30.3}, {"Player": "Jakob Marsee", "Team": "MIA", "Age": 25, "PA": 616, "HR": 11, "RBI": 41, "rbi_pa": 0.067, "ctx": 1.033, "adj": 0.064, "rbi600": 38.7, "Salary": 786000, "status": "Pre-Arb", "vs_exp": -30.9}, {"Player": "Jake Mangum", "Team": "PIT", "Age": 30, "PA": 479, "HR": 5, "RBI": 33, "rbi_pa": 0.069, "ctx": 1.071, "adj": 0.064, "rbi600": 38.6, "Salary": 800200, "status": "Pre-Arb", "vs_exp": -31.0}, {"Player": "Austin Martin", "Team": "MIN", "Age": 27, "PA": 358, "HR": 3, "RBI": 24, "rbi_pa": 0.067, "ctx": 1.046, "adj": 0.064, "rbi600": 38.4, "Salary": 790650, "status": "Pre-Arb", "vs_exp": -31.2}, {"Player": "Zach McKinstry", "Team": "DET", "Age": 31, "PA": 423, "HR": 4, "RBI": 26, "rbi_pa": 0.061, "ctx": 1.01, "adj": 0.061, "rbi600": 36.5, "Salary": 4200000, "status": "Arbitration", "vs_exp": -34.4}, {"Player": "Taylor Ward", "Team": "2TM", "Age": 32, "PA": 607, "HR": 7, "RBI": 37, "rbi_pa": 0.061, "ctx": 1.029, "adj": 0.059, "rbi600": 35.6, "Salary": 12175000, "status": "Free Agent", "vs_exp": -36.2}, {"Player": "David Hamilton", "Team": "MIL", "Age": 28, "PA": 387, "HR": 4, "RBI": 26, "rbi_pa": 0.067, "ctx": 1.139, "adj": 0.059, "rbi600": 35.4, "Salary": 787300, "status": "Pre-Arb", "vs_exp": -34.2}, {"Player": "Chandler Simpson", "Team": "TBR", "Age": 25, "PA": 612, "HR": 0, "RBI": 38, "rbi_pa": 0.062, "ctx": 1.065, "adj": 0.058, "rbi600": 35.0, "Salary": 785100, "status": "Pre-Arb", "vs_exp": -34.6}, {"Player": "Steven Kwan", "Team": "CLE", "Age": 28, "PA": 637, "HR": 3, "RBI": 32, "rbi_pa": 0.05, "ctx": 0.997, "adj": 0.05, "rbi600": 30.2, "Salary": 7725000, "status": "Free Agent", "vs_exp": -41.2}];
+const TEAMS = [{"t": "TOR", "name": "Toronto Blue Jays", "idx": 0.899, "rbi": 615, "pa": 6044}, {"t": "LAA", "name": "Los Angeles Angels", "idx": 0.91, "rbi": 627, "pa": 6089}, {"t": "SEA", "name": "Seattle Mariners", "idx": 0.926, "rbi": 638, "pa": 6089}, {"t": "CIN", "name": "Cincinnati Reds", "idx": 0.929, "rbi": 636, "pa": 6048}, {"t": "CLE", "name": "Cleveland Guardians", "idx": 0.939, "rbi": 650, "pa": 6117}, {"t": "SFG", "name": "San Francisco Giants", "idx": 0.942, "rbi": 646, "pa": 6061}, {"t": "TEX", "name": "Texas Rangers", "idx": 0.949, "rbi": 649, "pa": 6043}, {"t": "BOS", "name": "Boston Red Sox", "idx": 0.951, "rbi": 658, "pa": 6112}, {"t": "KCR", "name": "Kansas City Royals", "idx": 0.953, "rbi": 656, "pa": 6083}, {"t": "NYM", "name": "New York Mets", "idx": 0.966, "rbi": 668, "pa": 6111}, {"t": "ATH", "name": "Athletics", "idx": 0.966, "rbi": 670, "pa": 6126}, {"t": "DET", "name": "Detroit Tigers", "idx": 0.978, "rbi": 683, "pa": 6174}, {"t": "MIA", "name": "Miami Marlins", "idx": 0.988, "rbi": 685, "pa": 6127}, {"t": "STL", "name": "St. Louis Cardinals", "idx": 1.002, "rbi": 696, "pa": 6141}, {"t": "BAL", "name": "Baltimore Orioles", "idx": 1.004, "rbi": 691, "pa": 6079}, {"t": "PHI", "name": "Philadelphia Phillies", "idx": 1.004, "rbi": 691, "pa": 6079}, {"t": "HOU", "name": "Houston Astros", "idx": 1.012, "rbi": 701, "pa": 6122}, {"t": "TBR", "name": "Tampa Bay Rays", "idx": 1.013, "rbi": 700, "pa": 6106}, {"t": "SDP", "name": "San Diego Padres", "idx": 1.013, "rbi": 696, "pa": 6070}, {"t": "ARI", "name": "Arizona Diamondbacks", "idx": 1.015, "rbi": 706, "pa": 6148}, {"t": "MIN", "name": "Minnesota Twins", "idx": 1.02, "rbi": 707, "pa": 6127}, {"t": "COL", "name": "Colorado Rockies", "idx": 1.032, "rbi": 721, "pa": 6173}, {"t": "PIT", "name": "Pittsburgh Pirates", "idx": 1.036, "rbi": 733, "pa": 6253}, {"t": "ATL", "name": "Atlanta Braves", "idx": 1.038, "rbi": 711, "pa": 6053}, {"t": "NYY", "name": "New York Yankees", "idx": 1.04, "rbi": 706, "pa": 5997}, {"t": "CHW", "name": "Chicago White Sox", "idx": 1.057, "rbi": 740, "pa": 6187}, {"t": "LAD", "name": "Los Angeles Dodgers", "idx": 1.075, "rbi": 756, "pa": 6214}, {"t": "MIL", "name": "Milwaukee Brewers", "idx": 1.105, "rbi": 788, "pa": 6299}, {"t": "WSN", "name": "Washington Nationals", "idx": 1.108, "rbi": 777, "pa": 6195}, {"t": "CHC", "name": "Chicago Cubs", "idx": 1.113, "rbi": 804, "pa": 6382}];
+const REG = {slope:0.003050, intercept:0.098010, lg:0.11316};
+const STATUS_COLOR = {'Pre-Arb':'#3b82f6','Arbitration':'#f59e0b','Free Agent':'#6b7280'};
+const fmtSal = s => s >= 1e6 ? '$'+(s/1e6).toFixed(s>=1e7?1:2)+'M' : '$'+Math.round(s/1e3)+'K';
+
+// ── Scatter ───────────────────────────────────────────────
+(function(){
+  const traces = Object.keys(STATUS_COLOR).map(s => {
+    const g = DATA.filter(d => d.status === s);
+    return {
+      x: g.map(d => d.Salary), y: g.map(d => d.rbi600), mode:'markers', type:'scatter', name:s,
+      marker:{color:STATUS_COLOR[s], size:isMobile?7:9, opacity:.85, line:{color:'#fff',width:1}},
+      text: g.map(d => `<b>${d.Player}</b> (${d.Team})<br>Salary: ${fmtSal(d.Salary)}<br>${d.RBI} RBI in ${d.PA} PA<br>Raw RBI/PA: ${d.rbi_pa.toFixed(3)}<br>Team context: ${d.ctx.toFixed(3)}<br>Adjusted RBI/PA: ${d.adj.toFixed(3)}<br>Per 600 PA: ${d.rbi600}`),
+      hovertemplate:'%{text}<extra></extra>'
+    };
+  });
+  const xs = DATA.map(d => d.Salary), x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const yAt = x => (REG.intercept + REG.slope*Math.log10(x))*600;
+  traces.push({x:[x0,x1], y:[yAt(x0),yAt(x1)], mode:'lines', type:'scatter', name:'Regression line',
+    line:{color:'#0A1628',dash:'dash',width:2}, hoverinfo:'skip'});
+  Plotly.newPlot('chart-scatter', traces, {
+    xaxis:{title:'2026 Salary (log scale)', type:'log', tickvals:[1e6,3e6,1e7,3e7,7e7], ticktext:['$1M','$3M','$10M','$30M','$70M'], tickfont:{size:10}, gridcolor:'#f1f5f9'},
+    yaxis:{title:isMobile?'Adj. RBI / 600 PA':'Adjusted RBI per 600 PA', tickfont:{size:10}, gridcolor:'#f1f5f9'},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    legend:{orientation:'h', y:-0.2, font:{size:10}},
+    margin: isMobile ? {t:30,r:10,b:90,l:50} : {t:30,r:20,b:90,l:70},
+    annotations:[{x:.01,y:1.06,xref:'paper',yref:'paper',showarrow:false,align:'left',
+      text: isMobile ? 'r = 0.07 · p = 0.28' : 'r = 0.07 · R² = 0.004 · p = 0.28 · color = contract status',
+      font:{size:isMobile?9:10,color:'#64748b'}}]
+  }, {responsive:true, displayModeBar:false});
+})();
+
+// ── Team context ──────────────────────────────────────────
+(function(){
+  Plotly.newPlot('chart-teams', [{
+    y: TEAMS.map(t => isMobile ? t.t : t.name), x: TEAMS.map(t => t.idx - 1), base: 1,
+    type:'bar', orientation:'h',
+    marker:{color: TEAMS.map(t => t.idx >= 1 ? '#2563eb' : '#d97706'), opacity:.85},
+    text: TEAMS.map(t => t.idx.toFixed(3)), textposition:'outside', textfont:{size:isMobile?8:9}, cliponaxis:false,
+    customdata: TEAMS.map(t => [t.rbi, t.pa, t.name]),
+    hovertemplate:'<b>%{customdata[2]}</b><br>%{customdata[0]} RBI in %{customdata[1]} PA<br>Index: %{text}<extra></extra>'
+  }], {
+    xaxis:{title:isMobile?'Index (1.00 = MLB avg)':'Team Context Index (1.00 = MLB average)', tickfont:{size:isMobile?8:10}, gridcolor:'#f1f5f9', range:[0.86,1.15], tickformat:'.2f'},
+    yaxis:{tickfont:{size:isMobile?8:9}, automargin:true},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    shapes:[{type:'line',x0:1,x1:1,yref:'paper',y0:0,y1:1,line:{color:'#0A1628',width:1}}],
+    margin: isMobile ? {t:30,r:30,b:45,l:45} : {t:30,r:50,b:50,l:170},
+    annotations:[{x:.5,y:1.04,xref:'paper',yref:'paper',showarrow:false,
+      text: isMobile ? 'Blue: above average · Orange: below' : 'Blue: favorable run environment · Orange: unfavorable',
+      font:{size:isMobile?8:10,color:'#64748b'}}]
+  }, {responsive:true, displayModeBar:false});
+})();
+
+// ── Top 20 ────────────────────────────────────────────────
+(function(){
+  const top = [...DATA].sort((a,b) => b.adj - a.adj).slice(0,20).reverse();
+  Plotly.newPlot('chart-top', [{
+    y: top.map(d => d.Player), x: top.map(d => d.rbi600), type:'bar', orientation:'h',
+    marker:{color: top.map(d => STATUS_COLOR[d.status]), opacity:.9},
+    text: top.map(d => isMobile ? `${d.rbi600}` : `${d.rbi600} · ${fmtSal(d.Salary)} · ${d.status}`),
+    textposition: isMobile ? 'inside' : 'outside', cliponaxis:false,
+    textfont:{size:isMobile?8:9, color:isMobile?'#fff':'#1a1f2e'},
+    customdata: top.map(d => [d.Team, fmtSal(d.Salary), d.status, d.RBI, d.PA]),
+    hovertemplate:'<b>%{y}</b> (%{customdata[0]})<br>%{customdata[3]} RBI in %{customdata[4]} PA<br>Adjusted per 600 PA: %{x}<br>Salary: %{customdata[1]} · %{customdata[2]}<extra></extra>'
+  }], {
+    xaxis:{title:'Adjusted RBI per 600 PA', tickfont:{size:isMobile?8:10}, gridcolor:'#f1f5f9', range:[0, isMobile?118:150]},
+    yaxis:{tickfont:{size:isMobile?8:9}, automargin:true},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    margin: isMobile ? {t:30,r:10,b:45,l:115} : {t:30,r:20,b:50,l:150},
+    annotations:[{x:.5,y:1.05,xref:'paper',yref:'paper',showarrow:false,
+      text:'Blue: Pre-Arb · Orange: Arbitration · Gray: Free Agent', font:{size:isMobile?8:10,color:'#64748b'}}]
+  }, {responsive:true, displayModeBar:false});
+})();
+
+// ── Table ─────────────────────────────────────────────────
+let sortKey = 'adj', sortAsc = false, search = '', statusFilter = 'all', page = 1;
+const PAGE_SIZE = 50;
+
+function getRows() {
+  let rows = [...DATA];
+  if(statusFilter !== 'all') rows = rows.filter(d => d.status === statusFilter);
+  if(search) rows = rows.filter(d => d.Player.toLowerCase().includes(search.toLowerCase()) || d.Team.toLowerCase().includes(search.toLowerCase()));
+  rows.sort((a,b) => {
+    const av = a[sortKey], bv = b[sortKey];
+    if(av === bv) return 0;
+    return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
+  return rows;
+}
+
+function renderTable() {
+  const all = getRows();
+  const total = all.length;
+  const pages = Math.ceil(total / PAGE_SIZE);
+  if(page > pages) page = 1;
+  const rows = all.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+  const offset = (page-1)*PAGE_SIZE;
+  const tagCls = {'Pre-Arb':'tag-pre','Arbitration':'tag-arb','Free Agent':'tag-fa'};
+  let h = '';
+  rows.forEach((d,i) => {
+    const rank = offset+i+1;
+    const rankCls = rank<=3?'top3':rank<=10?'top10':'';
+    const ve = d.vs_exp;
+    const veCls = ve > 10 ? 'pos-val' : ve < -10 ? 'neg-val' : 'neutral-val';
+    h += `<tr>
+      <td><span class="rank-badge ${rankCls}">${rank}</span></td>
+      <td><strong>${d.Player}</strong></td>
+      <td class="mono">${d.Team}</td>
+      <td class="mono">${d.PA}</td>
+      <td class="mono">${d.RBI}</td>
+      <td class="mono">${d.rbi_pa.toFixed(3)}</td>
+      <td class="mono">${d.ctx.toFixed(3)}</td>
+      <td class="mono"><strong>${d.adj.toFixed(3)}</strong></td>
+      <td class="mono">${d.rbi600.toFixed(1)}</td>
+      <td class="mono">${fmtSal(d.Salary)}</td>
+      <td><span class="tag ${tagCls[d.status]}">${d.status}</span></td>
+      <td class="${veCls}">${(ve>=0?'+':'')+ve.toFixed(1)}</td>
+    </tr>`;
+  });
+  document.getElementById('tableBody').innerHTML = h;
+  document.getElementById('tableCount').textContent = total ? `Showing ${(page-1)*PAGE_SIZE+1}–${Math.min(page*PAGE_SIZE,total)} of ${total} players` : 'No player found';
+  renderPagination('tablePagination', pages, page, p => { page=p; renderTable(); });
+}
+
+let _paginationCallbacks = {};
+
+function renderPagination(id, pages, current, cb) {
+  const el = document.getElementById(id);
+  if(pages <= 1) { el.innerHTML=''; return; }
+  _paginationCallbacks[id] = cb;
+  let h = '';
+  h += `<button class="page-btn" ${current===1?'disabled':''} onclick="_paginationCallbacks['${id}'](${current-1})">Prev</button>`;
+  for(let p=1; p<=pages; p++) {
+    h += `<button class="page-btn${p===current?' active':''}" onclick="_paginationCallbacks['${id}'](${p})">${p}</button>`;
+  }
+  h += `<button class="page-btn" ${current===pages?'disabled':''} onclick="_paginationCallbacks['${id}'](${current+1})">Next</button>`;
+  el.innerHTML = h;
+}
+
+function sortTable(key) {
+  if(sortKey===key) sortAsc=!sortAsc; else { sortKey=key; sortAsc = (key==='Player'||key==='Team'||key==='status'); }
+  page=1; renderTable();
+}
+
+function setStatus(s, btn) {
+  statusFilter = s; page = 1;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  search=e.target.value; page=1; renderTable();
+});
+
+renderTable();
+</script>
+
+<!-- Glossary Drawer -->
+<div id="gl-overlay"></div>
+<aside id="gl-drawer" role="dialog" aria-label="Glossary" aria-modal="true">
+  <div id="gl-header">
+    <div><h2>Glossary</h2><span>RBI per PA vs. Salary</span></div>
+    <button id="gl-close" aria-label="Close glossary">&#x2715;</button>
+  </div>
+  <div id="gl-body"><dl>
+      <div class="gl-item"><dt class="gl-term">RBI</dt><dd class="gl-def">Runs Batted In. Runs that score as a direct result of a batter's plate appearance (hit, walk with bases loaded, sacrifice fly, and so on).</dd></div>
+      <div class="gl-item"><dt class="gl-term">PA</dt><dd class="gl-def">Plate Appearances. Total times a batter comes to the plate, including walks and hit-by-pitches.</dd></div>
+      <div class="gl-item"><dt class="gl-term">RBI/PA</dt><dd class="gl-def">RBI divided by plate appearances. How many runs a batter drives in per trip to the plate. League average in 2026: 0.113.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Team Context Index</dt><dd class="gl-def">RBI/PA of a player's teammates (team total minus the player's own RBI and PA), divided by the MLB average. Above 1.00 means a favorable run-scoring environment, below 1.00 an unfavorable one.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Adjusted RBI/PA</dt><dd class="gl-def">Raw RBI/PA divided by the Team Context Index. Removes the advantage or handicap of playing in a high or low scoring lineup.</dd></div>
+      <div class="gl-item"><dt class="gl-term">RBI per 600 PA</dt><dd class="gl-def">Adjusted RBI/PA multiplied by 600, roughly a full season of playing time. Easier to read than a per-PA rate.</dd></div>
+      <div class="gl-item"><dt class="gl-term">vs Expected</dt><dd class="gl-def">Adjusted RBI per 600 PA minus what the regression line predicts for a player at that salary. Positive means more run production than the salary suggests.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Pearson r</dt><dd class="gl-def">Correlation coefficient, from -1 to +1. Values near 0 mean no linear relationship between the two variables.</dd></div>
+      <div class="gl-item"><dt class="gl-term">R²</dt><dd class="gl-def">R-squared. Share of the variation in the outcome explained by the model. 0.004 means salary explains 0.4% of the variation in adjusted RBI/PA.</dd></div>
+      <div class="gl-item"><dt class="gl-term">p-value</dt><dd class="gl-def">Probability of seeing a relationship this strong by chance alone if there were no real link. Below 0.05 is the usual threshold for statistical significance.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Pre-Arb</dt><dd class="gl-def">Pre-Arbitration. Players in their first years of MLB service, earning near the league minimum. Proxied here by a 2026 salary under $1M.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Arbitration</dt><dd class="gl-def">Players with roughly 3 to 6 years of service who negotiate salaries through a formal process. Proxied here by a salary from $1M to under $7M.</dd></div>
+      <div class="gl-item"><dt class="gl-term">Free Agent</dt><dd class="gl-def">Players on market-rate contracts. Proxied here by a salary of $7M or more.</dd></div>
+      <div class="gl-item"><dt class="gl-term">2TM</dt><dd class="gl-def">Two teams. The player changed teams during the season; stats are combined and the team context is weighted by PA with each club.</dd></div>
+  </dl></div>
+</aside>
+<button id="gl-fab" aria-label="Open glossary">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="7" x2="8" y2="11.5"/><circle cx="8" cy="5" r=".6" fill="currentColor" stroke="none"/></svg>
+  Glossary
+</button>
+<style>
+  /* ── Glossary Drawer ─────────────────────────────── */
+  #gl-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:998;opacity:0;pointer-events:none;transition:opacity .25s}
+  #gl-overlay.open{opacity:1;pointer-events:all}
+  #gl-drawer{position:fixed;top:0;right:0;height:100%;width:min(400px,92vw);background:#fff;z-index:999;
+    box-shadow:-4px 0 24px rgba(0,0,0,.12);transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    display:flex;flex-direction:column;overflow:hidden}
+  #gl-drawer.open{transform:translateX(0)}
+  #gl-header{padding:1.1rem 1.25rem .9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  #gl-header h2{font-size:.95rem;font-weight:700;color:var(--navy);letter-spacing:.01em;margin:0}
+  #gl-header span{font-size:.72rem;color:var(--muted);font-family:var(--mono)}
+  #gl-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.2rem;padding:.25rem;line-height:1;border-radius:4px}
+  #gl-close:hover{color:var(--navy);background:var(--bg2)}
+  #gl-body{overflow-y:auto;padding:1rem 1.25rem 2rem;flex:1}
+  .gl-item{margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border)}
+  .gl-item:last-child{border-bottom:none}
+  .gl-term{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--blue);margin:0 0 .3rem}
+  .gl-def{font-size:.82rem;color:var(--text);line-height:1.55;margin:0}
+  #gl-fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:997;
+    background:var(--navy);color:#fff;border:none;cursor:pointer;
+    padding:.55rem 1rem;border-radius:20px;font-size:.78rem;font-weight:600;
+    font-family:var(--mono);letter-spacing:.04em;
+    box-shadow:0 2px 12px rgba(10,22,40,.25);
+    display:flex;align-items:center;gap:.4rem;transition:background .15s,transform .15s}
+  #gl-fab:hover{background:#1a2e4a;transform:translateY(-1px)}
+  #gl-fab svg{width:14px;height:14px;flex-shrink:0}
+</style>
+<script>
+  (function(){
+    const fab = document.getElementById('gl-fab');
+    const drawer = document.getElementById('gl-drawer');
+    const overlay = document.getElementById('gl-overlay');
+    const close = document.getElementById('gl-close');
+    function open(){drawer.classList.add('open');overlay.classList.add('open');document.body.style.overflow='hidden';}
+    function shut(){drawer.classList.remove('open');overlay.classList.remove('open');document.body.style.overflow='';}
+    fab.addEventListener('click', open);
+    close.addEventListener('click', shut);
+    overlay.addEventListener('click', shut);
+    document.addEventListener('keydown', e => { if(e.key==='Escape') shut(); });
+  })();
+</script>
+
+
+</body>
+</html>
